@@ -12,7 +12,7 @@ int main(){
 	scanTrajFolder(filePath, timeSlices);//读入轨迹
 	for each (TimeSlice* timeSlice in timeSlices)//对轨迹采样点建立索引
 	{
-		for each (TrajSamplePoint* point in (*timeSlice).points)
+		for each (GeoPoint* point in (*timeSlice).points)
 		{
 			if (!routeNetork.insertPoint(point)){
 				cout << "有采样点超出索引范围！采样点id：" << point->id << "，轨迹id" << point->objectId << endl;
@@ -22,7 +22,7 @@ int main(){
 	}
 	for each (TimeSlice* timeSlice in timeSlices)
 	{
-		timeSlice.clustering(routeNetork);
+		timeSlice->clustering(routeNetork);
 	}
 	return 0;
 }
