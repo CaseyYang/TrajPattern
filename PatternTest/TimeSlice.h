@@ -10,4 +10,8 @@ public:
 
 	TimeSlice(int time);
 	void clustering(Map& routeNetwork);
+
+private:
+	void dbscan(Map& routeNetwork);
+	void expandCluster(Map& routeNetwork,GeoPoint* p, list<GeoPoint*> &neighbor, Cluster* cluster);
 };
