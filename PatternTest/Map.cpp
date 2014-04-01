@@ -584,15 +584,14 @@ double Map::distMFromTransplantFromSRC(double lat, double lon, Edge* edge, doubl
 	return result;
 }
 
-//找出所有距离(lat, lon)点严格小于threshold米的所有GeoPoint*，保存在dest容器内
+//找出同一时间片中所有距离点point严格小于threshold米的所有GeoPoint*，保存在dest容器内
 //具体方法类似getNearEdges
-void Map::getNearPoints(double lat, double lon, double threshold, list<GeoPoint*>& dest)
+void Map::getNearPointsInSameTimeStamp(GeoPoint* point, double threshold, list<GeoPoint*>& dest)
 {
 	dest.clear();
-	vector<Edge*> fail;
 	int gridSearchRange = int(threshold / (gridSizeDeg * GeoPoint::geoScale)) + 1;
-	int rowPt = getRowId(lat);
-	int colPt = getColId(lon);
+	int rowPt = getRowId(point->lat);
+	int colPt = getColId(point->lon);
 	int row1 = rowPt - gridSearchRange;
 	int col1 = colPt - gridSearchRange;
 	int row2 = rowPt + gridSearchRange;
@@ -607,7 +606,7 @@ void Map::getNearPoints(double lat, double lon, double threshold, list<GeoPoint*
 		{
 			for (list<GeoPoint*>::iterator iter = pointGrid[row][col]->begin(); iter != pointGrid[row][col]->end(); iter++)
 			{
-				if (GeoPoint::distM(lat, lon, (*iter)->lat, (*iter)->lon) <= threshold){
+				if (point->time == (*iter)->time && GeoPoint::distM(point->lat, point->lon, (*iter)->lat, (*iter)->lon) <= threshold){
 					dest.push_back(*iter);
 				}
 			}
@@ -641,9 +640,8 @@ bool Map::insertPoint(GeoPoint* point){
 		return true;
 	}
 	else{
-		cout << "采样点位置超过索引范围！" << endl;
 		return false;
-	}	
+	}
 }
 
 //在当前图中插入点

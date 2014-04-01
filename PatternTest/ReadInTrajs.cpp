@@ -7,14 +7,16 @@ void readOneTrajectory(string &filePath, int trajId, vector<TimeSlice*> &timeSli
 	ifstream fin(filePath);
 	double lat, lon;
 	int time;
+	char useless;
 	int trajSamplePointIndex = 0;
-	while (fin >> time){
-		if (time > 172800){
+	while (fin >> time >> useless){
+		if (time >= 172800){
 			cout << "出现超过一天的轨迹！" << "轨迹id：" << trajId << endl;
 			system("pause");
 		}
-		fin >> lat >> lon;
-		timeSlices.at((time - 86400) / 60)->points.push_back(new GeoPoint(trajSamplePointIndex, trajId, lat, lon, time));
+		fin >> lat >> useless >> lon;
+		int uniformTime = (time - 86400) / 60;//把原始时间戳转为时间片时间
+		timeSlices.at(uniformTime)->points.push_back(new GeoPoint(trajSamplePointIndex, trajId, lat, lon, time, uniformTime));
 		trajSamplePointIndex++;
 	}
 	fin.close();
@@ -42,7 +44,7 @@ void scanTrajFolder(string folderDir, vector<TimeSlice*> &timeSlices)
 		int trajIndex = 0;
 		do {
 			string inputFileName = fileInfo.name;
-			readOneTrajectory(folderDir + inputDirectory + "\\" + inputFileName,trajIndex,timeSlices);
+			readOneTrajectory(folderDir + inputDirectory + "\\" + inputFileName, trajIndex, timeSlices);
 			trajIndex++;
 		} while (_findnext(lf, &fileInfo) == 0);
 		_findclose(lf);

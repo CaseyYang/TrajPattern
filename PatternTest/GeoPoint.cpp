@@ -1,15 +1,22 @@
 #include <math.h>
 #include "GeoPoint.h"
+using namespace std;
 
 double GeoPoint::geoScale = 6371004 * 3.141592965 / 180;
 
-GeoPoint::GeoPoint(double lat, double lon, int time) :lat(lat), lon(lon), time(time){
+GeoPoint::GeoPoint(double lat, double lon, int rawTime) :id(-1), objectId(-1), lat(lat), lon(lon), rawTime(rawTime), time(rawTime){
+	visited = clustered = false;
+	//clusterLink=NULL;
 }
 
-GeoPoint::GeoPoint(double lat, double lon) : lat(lat), lon(lon), time(INVALID_TIME){
+GeoPoint::GeoPoint(double lat, double lon) : id(-1), objectId(-1), lat(lat), lon(lon), rawTime(INVALID_TIME), time(INVALID_TIME){
+	visited = clustered = false;
+	//clusterLink=NULL;
 }
 
-GeoPoint::GeoPoint(int id, int objectId, double lat, double lon, int time) : id(id), objectId(objectId), lat(lat), lon(lon), time(time), properties(""){
+GeoPoint::GeoPoint(int id, int objectId, double lat, double lon, int rawTime, int time) : id(id), objectId(objectId), lat(lat), lon(lon), rawTime(rawTime), time(time){
+	visited = clustered = false;
+	//clusterLink=NULL;
 }
 
 double GeoPoint::distM(double lat1, double lon1, double lat2, double lon2)

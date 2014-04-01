@@ -79,8 +79,8 @@ public:
 	double distM(double lat, double lon, Edge* edge, double& prjDist) const;
 	//移植SRC版本：返回(lat,lon)点到edge的距离，单位为米；同时记录投影点到edge起点的距离存入prjDist
 	double Map::distMFromTransplantFromSRC(double lat, double lon, Edge* edge, double& prjDist);
-	//找出所有距离(lat, lon)点严格小于threshold米的所有GeoPoint*，保存在dest容器内
-	void Map::getNearPoints(double lat, double lon, double threshold, list<GeoPoint*>& dest);
+	//找出同一时间片内所有距离点point严格小于threshold米的所有GeoPoint*，保存在dest容器内
+	void Map::getNearPointsInSameTimeStamp(GeoPoint* point, double threshold, list<GeoPoint*>& dest);
 	//判断startNodeId与endNodeId之间有无边,没有边返回-1，有边返回edgeId
 	int hasEdge(int startNodeId, int endNodeId) const;
 	//在索引中插入一个轨迹采样点，返回true表示插入成功；返回false表示采样点位置超过索引范围
@@ -117,16 +117,16 @@ public:
 	//double maxLon = 104.0;
 
 	//singapore full
-	//double minLat = 0.99999;
-	//double maxLat = 1.6265;
-	//double minLon = 103.548;
-	//double maxLon = 104.1155;
+	double minLat = 0.99999;
+	double maxLat = 1.6265;
+	double minLon = 103.548;
+	double maxLon = 104.1155;
 
 	//washington full
-	double minLat = 45.0;
-	double maxLat = 49.5;
-	double minLon = -125.0;
-	double maxLon = -116.5;
+	//double minLat = 45.0;
+	//double maxLat = 49.5;
+	//double minLon = -125.0;
+	//double maxLon = -116.5;
 
 	int getRowId(double lat) const;
 	int getColId(double lon) const;
