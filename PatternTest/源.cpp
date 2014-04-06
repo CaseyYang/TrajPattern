@@ -1,12 +1,15 @@
-#include<iostream>
-#include"ReadInTrajs.h"
-#include"Map.h"
-#include"TimeSlice.h"
+#include <iostream>
+#include "ReadInTrajs.h"
+#include "Map.h"
+#include "TimeSlice.h"
+#include "NewTimeSlice.h"
 using namespace std;
-string filePath = "D:\\Document\\MDM Lab\\Data\\新加坡轨迹数据\\";
 
-int main(){
-	Map routeNetork = Map(filePath, 500);//建立路网
+Map routeNetwork;
+string filePath = "E:\\Document\\Subjects\\Computer\Data\\新加坡轨迹数据\\";
+
+//对比实验准备工作：读取轨迹文件、建立索引及聚类
+void clusterDemo(){
 	vector<TimeSlice*> timeSlices = vector<TimeSlice*>(1440);//初始化时间片集合
 	int timeStamp = 0;
 	for (int timeStamp = 0; timeStamp < 1440; timeStamp++){
@@ -19,7 +22,7 @@ int main(){
 	{
 		for each (GeoPoint* point in (*timeSlice).points)
 		{
-			if (!routeNetork.insertPoint(point)){
+			if (!routeNetwork.insertPoint(point)){
 				outIndexCount++;
 			}
 		}
@@ -28,8 +31,22 @@ int main(){
 	cout << "共有" << outIndexCount << "个采样点在索引范围外" << endl;
 	for each (TimeSlice* timeSlice in timeSlices)
 	{
-		timeSlice->clustering(routeNetork);
-		cout << "时间片" << timeSlice->time << "得到聚类" << timeSlice->clusters.size() << endl;
+		timeSlice->clustering(routeNetwork);
 	}
+}
+
+void edgeCluster(){
+	vector<NewTimeSlice*> timeSlices = vector<NewTimeSlice*>(1440);//初始化时间片集合
+	int timeStamp = 0;
+	for (int timeStamp = 0; timeStamp < 1440; timeStamp++){
+		timeSlices.at(timeStamp) = new NewTimeSlice(timeStamp);
+	}
+	scanMapMatchingResultFolder(filePath, timeSlices, routeNetwork);//读入地图匹配结果文件
+	cout << "读入所有地图匹配结果" << endl;
+}
+
+int main(){
+	routeNetwork = Map(filePath, 500);//建立路网
+	edgeCluster();
 	return 0;
 }
