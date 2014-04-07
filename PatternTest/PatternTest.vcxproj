@@ -77,15 +77,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Cluster.h" />
+    <ClInclude Include="Parameters.h" />
+    <ClInclude Include="EdgeCluster.h" />
     <ClInclude Include="GeoPoint.h" />
     <ClInclude Include="Map.h" />
+    <ClInclude Include="NewTimeSlice.h" />
     <ClInclude Include="ReadInTrajs.h" />
     <ClInclude Include="TimeSlice.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Cluster.cpp" />
+    <ClCompile Include="EdgeCluster.cpp" />
     <ClCompile Include="GeoPoint.cpp" />
     <ClCompile Include="Map.cpp" />
+    <ClCompile Include="NewTimeSlice.cpp" />
     <ClCompile Include="ReadInTrajs.cpp" />
     <ClCompile Include="TimeSlice.cpp" />
     <ClCompile Include="源.cpp" />

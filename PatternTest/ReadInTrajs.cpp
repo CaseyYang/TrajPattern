@@ -6,7 +6,7 @@ void readOneTrajectory(string &filePath, int trajId, vector<TimeSlice*> &timeSli
 {
 	ifstream fin(filePath);
 	double lat, lon;
-	int time;
+	int time, lastUniformTime = -1;//由于一些采样点的采样间隔小于1分钟，使用lastUniformTime用于防止同一个时间片中插入多个来自同一轨迹的采样点
 	char useless;
 	int trajSamplePointIndex = 0;
 	while (fin >> time >> useless){
@@ -16,8 +16,34 @@ void readOneTrajectory(string &filePath, int trajId, vector<TimeSlice*> &timeSli
 		}
 		fin >> lat >> useless >> lon;
 		int uniformTime = (time - 86400) / 60;//把原始时间戳转为时间片时间
-		timeSlices.at(uniformTime)->points.push_back(new GeoPoint(trajSamplePointIndex, trajId, lat, lon, time, uniformTime));
-		trajSamplePointIndex++;
+		if (uniformTime > lastUniformTime){
+			timeSlices.at(uniformTime)->points.push_back(new GeoPoint(trajSamplePointIndex, trajId, lat, lon, time, uniformTime));
+			trajSamplePointIndex++;
+			lastUniformTime = uniformTime;
+		}
+	}
+	fin.close();
+}
+
+//读入给定路径的地图匹配结果文件，把每个匹配路段插入对应的时间片中
+void readOneMapMatchingResult(string &filePath, int trajId, vector<NewTimeSlice*> &timeSlices, Map &routeNetwork){
+	ifstream fin(filePath);
+	int time, uniformTime = -1;//uniformTime作用同readOneTrajectory函数中lastUniformTime
+	int edgeIndex;
+	double confidence;
+	char useless;
+	EdgeCluster* lastEdgeCluster = NULL;//记录上一个路段聚类，因为要用当前的匹配路段来更新上一路段聚类的nextEdgeCounts集合
+	while (fin >> time >> useless){
+		fin >> edgeIndex >> useless >> confidence;
+		if (edgeIndex != -1 && uniformTime > ((time - 86400) / 60)){
+			uniformTime = (time - 86400) / 60;//把原始时间戳转为时间片时间
+			Edge* matchedEdge = routeNetwork.edges.at(edgeIndex);
+			timeSlices.at(uniformTime)->add(trajId, matchedEdge);
+			if (lastEdgeCluster != NULL){//上一个路段聚类不为空
+				lastEdgeCluster->refreshNextEdgeCounts(matchedEdge);//更新上一路段聚类的nextEdgeCounts集合
+			}
+			lastEdgeCluster = timeSlices.at(uniformTime)->clusters.at(matchedEdge);//更新lastEdgeCluster指向当前路段聚类
+		}
 	}
 	fin.close();
 }
@@ -45,6 +71,28 @@ void scanTrajFolder(string folderDir, vector<TimeSlice*> &timeSlices)
 		do {
 			string inputFileName = fileInfo.name;
 			readOneTrajectory(folderDir + inputDirectory + "\\" + inputFileName, trajIndex, timeSlices);
+			trajIndex++;
+		} while (_findnext(lf, &fileInfo) == 0);
+		_findclose(lf);
+		return;
+	}
+}
+
+//读入地图匹配结果文件，保存时间片
+void scanMapMatchingResultFolder(string folderDir, vector<NewTimeSlice*> &timeSlices, Map &routeNetwork){
+	string inputDirectory = "splited_output";
+	string completeInputFilesPath = folderDir + inputDirectory + "\\" + "*.txt";
+	const char* dir = completeInputFilesPath.c_str();
+	_finddata_t fileInfo;//文件信息
+	long lf;//文件句柄
+	if ((lf = _findfirst(dir, &fileInfo)) == -1l) {
+		return;
+	}
+	else {
+		int trajIndex = 0;
+		do {
+			string inputFileName = fileInfo.name;
+			readOneMapMatchingResult(folderDir + inputDirectory + "\\" + inputFileName, trajIndex, timeSlices, routeNetwork);
 			trajIndex++;
 		} while (_findnext(lf, &fileInfo) == 0);
 		_findclose(lf);
