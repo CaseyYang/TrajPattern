@@ -55,24 +55,26 @@ void edgeCluster(){
 	}
 }
 
-//辅助函数：判断给定的两个路段聚类是否满足扩展条件：满足返回true；否则返回false
-bool couldExtendOrNot(set<int> &set1, set<int> &set2){
+//naive方法的辅助函数：判断给定的两个路段聚类是否满足扩展条件：满足返回true；否则返回false
+bool couldExtendOrNot(set<int> &set1, set<int> &set2, int &intersectionCount){
 	set<int> unionResult = set<int>();
 	set_union(set1.begin(), set1.end(), set2.begin(), set2.end(), unionResult.begin());
 	set<int> intersectionResult = set<int>();
 	set_intersection(set1.begin(), set1.end(), set2.begin(), set2.end(), intersectionResult.begin());
+	intersectionCount = intersectionResult.size();
 	double similarity = (intersectionResult.size() + 0.0) / unionResult.size();
 	return similarity >= DE_MINSIMILARITY;
 }
 
-//辅助函数：在下一时间片中扩展给定的路段聚类
+//naive方法的辅助函数：在下一时间片中扩展给定的路段聚类
 list<EdgeCluster*> extendDensityEdges(EdgeCluster* edgeCluster){
 	list<EdgeCluster*> result = list<EdgeCluster*>();
 	if (edgeCluster->time < timeSlices.size() - 1){
 		for (auto tmpCluster : timeSlices.at(edgeCluster->time + 1)->clusters)
 		{
 			//满足最小元素个数条件和可扩展性条件
-			if (tmpCluster.second->clusterObjects.size() >= DE_MINOBJECTS&&couldExtendOrNot(edgeCluster->clusterObjects, tmpCluster.second->clusterObjects)){
+			int useless = 0;
+			if (tmpCluster.second->clusterObjects.size() >= DE_MINOBJECTS&&couldExtendOrNot(edgeCluster->clusterObjects, tmpCluster.second->clusterObjects, useless)){
 				tmpCluster.second->assigned = true;
 				result.push_back(tmpCluster.second);
 			}
@@ -104,7 +106,7 @@ list<list<EdgeCluster*>> naiveMethod(){
 		}
 		for (auto edgeCluster : timeSlice->clusters){
 			//当前时间片中的路段聚类未用于扩展且满足最小元素个数条件，即作为新的一个候选序列
-			if ((!edgeCluster.second->assigned) && edgeCluster.second->clusterObjects.size()>=DE_MINOBJECTS){
+			if ((!edgeCluster.second->assigned) && edgeCluster.second->clusterObjects.size() >= DE_MINOBJECTS){
 				edgeCluster.second->assigned = true;
 				list<EdgeCluster*> densityEdges = list<EdgeCluster*>();
 				densityEdges.push_back(edgeCluster.second);
@@ -116,7 +118,36 @@ list<list<EdgeCluster*>> naiveMethod(){
 	return resultsList;
 }
 
-//加入k值剪枝的方法
+//带k值剪枝的方法的辅助函数：在下一时间片中扩展给定的路段聚类
+//k剪枝：(1-DE_SIMILARITY)*|cluster|>=k
+list<EdgeCluster*> extendDensityEdgesWithKPruning(EdgeCluster* edgeCluster){
+	list<EdgeCluster*> result = list<EdgeCluster*>();
+	if (edgeCluster->time < timeSlices.size() - 1){
+		for (auto tmpCluster : timeSlices.at(edgeCluster->time + 1)->clusters)
+		{
+			//对于带扩展时间片中的路段聚类，只有不满足k剪枝条件才可能成为序列的下一个元素
+			if (tmpCluster.second->k <= tmpCluster.second->clusterObjects.size()*(1 - DE_MINSIMILARITY)){
+				int intersectionCount = 0;
+				//满足最小元素个数条件和可扩展性条件
+				if (tmpCluster.second->clusterObjects.size() >= DE_MINOBJECTS&&couldExtendOrNot(edgeCluster->clusterObjects, tmpCluster.second->clusterObjects, intersectionCount)){
+					tmpCluster.second->assigned = true;
+					tmpCluster.second->k += intersectionCount;
+					edgeCluster->k += intersectionCount;
+					result.push_back(tmpCluster.second);
+				}
+				if (edgeCluster->k > edgeCluster->clusterObjects.size()*(1 - DE_MINSIMILARITY)){//对于当前序列的最后一个聚类，一旦满足k剪枝，则停止扩展
+					break;
+				}
+			}
+			else{
+				continue;
+			}
+		}
+	}
+	return result;
+}
+
+//带k值剪枝的方法
 list<list<EdgeCluster*>> methodWithKPruning(){
 	resultsList = list<list<EdgeCluster*>>();
 	list<list<EdgeCluster*>> canadidates = list<list<EdgeCluster*>>();//候选序列集合
@@ -124,7 +155,44 @@ list<list<EdgeCluster*>> methodWithKPruning(){
 		list<list<EdgeCluster*>> newCanadidates = list<list<EdgeCluster*>>();//新的候选序列集合
 		for (auto canadidate : canadidates){
 			EdgeCluster* lastSnapshotCluster = canadidate.back();
-			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdges(lastSnapshotCluster);
+			lastSnapshotCluster->k = 0;
+			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdgesWithKPruning(lastSnapshotCluster);
+			if (assignedEdgeClusters.size() == 0){
+				if (canadidate.size() >= DE_DURATIVE){//满足持续性条件
+					resultsList.push_back(canadidate);
+				}
+			}
+			else{
+				for (auto assignedEdgeCluster : assignedEdgeClusters){
+					newCanadidates.push_back(canadidate);
+					newCanadidates.back().push_back(assignedEdgeCluster);
+				}
+			}
+		}
+		for (auto edgeCluster : timeSlice->clusters){
+			//当前时间片中的路段聚类未用于扩展且满足最小元素个数条件，即作为新的一个候选序列
+			if ((!edgeCluster.second->assigned) && edgeCluster.second->clusterObjects.size() >= DE_MINOBJECTS){
+				edgeCluster.second->assigned = true;
+				list<EdgeCluster*> densityEdges = list<EdgeCluster*>();
+				densityEdges.push_back(edgeCluster.second);
+				newCanadidates.push_back(densityEdges);
+			}
+		}
+		canadidates = newCanadidates;//更新候选序列集合
+	}
+	return resultsList;
+}
+
+//利用后续匹配路段信息的方法
+list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo(){
+	resultsList = list<list<EdgeCluster*>>();
+	list<list<EdgeCluster*>> canadidates = list<list<EdgeCluster*>>();//候选序列集合
+	for (auto timeSlice : timeSlices){
+		list<list<EdgeCluster*>> newCanadidates = list<list<EdgeCluster*>>();//新的候选序列集合
+		for (auto canadidate : canadidates){
+			EdgeCluster* lastSnapshotCluster = canadidate.back();
+			lastSnapshotCluster->k = 0;
+			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdgesWithKPruning(lastSnapshotCluster);
 			if (assignedEdgeClusters.size() == 0){
 				if (canadidate.size() >= DE_DURATIVE){//满足持续性条件
 					resultsList.push_back(canadidate);
