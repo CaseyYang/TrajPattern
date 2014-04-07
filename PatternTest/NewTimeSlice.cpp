@@ -17,10 +17,14 @@ bool NewTimeSlice::add(int objectId, Edge* edge){
 			return true;
 		}
 		else{
+			cout << "同一时间片同一路段出现重复轨迹！" << endl;
+			system("pause");
 			return false;
 		}
 	}
 	else{
+		cout << "同一时间片出现重复轨迹！" << endl;
+		system("pause");
 		return false;
 	}
 }
