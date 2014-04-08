@@ -28,21 +28,22 @@ void readOneTrajectory(string &filePath, int trajId, vector<TimeSlice*> &timeSli
 //读入给定路径的地图匹配结果文件，把每个匹配路段插入对应的时间片中
 void readOneMapMatchingResult(string &filePath, int trajId, vector<NewTimeSlice*> &timeSlices, Map &routeNetwork){
 	ifstream fin(filePath);
-	int time, uniformTime = -1;//uniformTime作用同readOneTrajectory函数中lastUniformTime
+	int time, lastUniformTime = -1;//uniformTime作用同readOneTrajectory函数中lastUniformTime
 	int edgeIndex;
 	double confidence;
 	char useless;
 	EdgeCluster* lastEdgeCluster = NULL;//记录上一个路段聚类，因为要用当前的匹配路段来更新上一路段聚类的nextEdgeCounts集合
 	while (fin >> time >> useless){
 		fin >> edgeIndex >> useless >> confidence;
-		if (edgeIndex != -1 && uniformTime > ((time - 86400) / 60)){
-			uniformTime = (time - 86400) / 60;//把原始时间戳转为时间片时间
+		int uniformTime = (time - 86400) / 60;//把原始时间戳转为时间片时间
+		if (edgeIndex != -1 && uniformTime > lastUniformTime){
 			Edge* matchedEdge = routeNetwork.edges.at(edgeIndex);
 			timeSlices.at(uniformTime)->add(trajId, matchedEdge);
-			if (lastEdgeCluster != NULL){//上一个路段聚类不为空
+			if (lastEdgeCluster != NULL&&uniformTime == lastUniformTime + 1){//上一个路段聚类不为空
 				lastEdgeCluster->refreshNextEdgeCounts(matchedEdge);//更新上一路段聚类的nextEdgeCounts集合
 			}
 			lastEdgeCluster = timeSlices.at(uniformTime)->clusters.at(matchedEdge);//更新lastEdgeCluster指向当前路段聚类
+			lastUniformTime = uniformTime;
 		}
 	}
 	fin.close();

@@ -183,6 +183,35 @@ list<list<EdgeCluster*>> methodWithKPruning(){
 	return resultsList;
 }
 
+//利用后续匹配路段信息的方法的辅助函数：在下一时间片中扩展给定的路段聚类
+//利用后续匹配路段信息：与之前方法枚举下一时间片中的所有路段聚类不同，只枚举当前路段聚类中所含轨迹的后续匹配路段所在的路段聚类
+list<EdgeCluster*> extendDensityEdgesWithKPruning(EdgeCluster* edgeCluster){
+	list<EdgeCluster*> result = list<EdgeCluster*>();
+	if (edgeCluster->time < timeSlices.size() - 1){
+		for (auto edge : edgeCluster->priorCanadidates){//和带k值剪枝的方法相比，就是这句话不一样；这句话以后都是一样的
+			EdgeCluster* tmpCluster = timeSlices.at(edgeCluster->time + 1)->clusters.at(edge);
+			//对于带扩展时间片中的路段聚类，只有不满足k剪枝条件才可能成为序列的下一个元素
+			if (tmpCluster->k <= tmpCluster->clusterObjects.size()*(1 - DE_MINSIMILARITY)){
+				int intersectionCount = 0;
+				//满足最小元素个数条件和可扩展性条件
+				if (tmpCluster->clusterObjects.size() >= DE_MINOBJECTS&&couldExtendOrNot(edgeCluster->clusterObjects, tmpCluster->clusterObjects, intersectionCount)){
+					tmpCluster->assigned = true;
+					tmpCluster->k += intersectionCount;
+					edgeCluster->k += intersectionCount;
+					result.push_back(tmpCluster);
+				}
+				if (edgeCluster->k > edgeCluster->clusterObjects.size()*(1 - DE_MINSIMILARITY)){//对于当前序列的最后一个聚类，一旦满足k剪枝，则停止扩展
+					break;
+				}
+			}
+			else{
+				continue;
+			}
+		}
+	}
+	return result;
+}
+
 //利用后续匹配路段信息的方法
 list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo(){
 	resultsList = list<list<EdgeCluster*>>();
