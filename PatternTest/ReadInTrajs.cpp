@@ -35,7 +35,7 @@ void readOneMapMatchingResult(string &filePath, int trajId, vector<NewTimeSlice*
 	EdgeCluster* lastEdgeCluster = NULL;//记录上一个路段聚类，因为要用当前的匹配路段来更新上一路段聚类的nextEdgeCounts集合
 	while (fin >> time >> useless){
 		fin >> edgeIndex >> useless >> confidence;
-		int uniformTime = (time - 86400) / 60;//把原始时间戳转为时间片时间
+		int uniformTime = time / 60;//把原始时间戳转为时间片时间
 		if (edgeIndex != -1 && uniformTime > lastUniformTime){
 			Edge* matchedEdge = routeNetwork.edges.at(edgeIndex);
 			timeSlices.at(uniformTime)->add(trajId, matchedEdge);
