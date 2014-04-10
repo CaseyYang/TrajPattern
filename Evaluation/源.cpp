@@ -6,7 +6,9 @@
 using namespace std;
 
 Map routeNetwork;
-string filePath = "D:\\Document\\MDM Lab\\Data\\新加坡轨迹数据\\";
+string filePath = "D:\\Document\\Subjects\\Computer\\Develop\\Data\\SingaporeData\\";
+
+//序列结果
 struct DensityEdges{
 	int startTime;
 	int endTime;
@@ -21,8 +23,10 @@ struct DensityEdges{
 	}
 };
 
+//序列结果集合
 list<DensityEdges*> resultLists = list<DensityEdges*>();
 
+//读入序列结果文件
 void readInResult(string resultFilePath){
 	ifstream fin(resultFilePath);
 	int totalCount = 0;
@@ -66,8 +70,26 @@ void getTimeStatistic(){
 	fout.close();
 }
 
+//统计结果路段数量
+void getDistinctEdges(){
+	set<Edge*> distinctEdges = set<Edge*>();
+	for (auto result : resultLists){
+		for (auto resultEdge:result->resultEdges){
+			if (distinctEdges.find(resultEdge) == distinctEdges.end()){
+				distinctEdges.insert(resultEdge);
+			}
+		}
+	}
+	cout << "共有" << distinctEdges.size() << "条不相同的边" << endl;
+	for (auto edge : distinctEdges){
+		cout << edge->id << " ";
+	}
+	cout << endl;
+}
+
 int main(){
 	routeNetwork = Map(filePath, 500);
-	readInResult("result_day3_withtime.txt");
-	getTimeStatistic();
+	readInResult("result_day1_withtime.txt");
+	//getTimeStatistic();
+	getDistinctEdges();
 }
