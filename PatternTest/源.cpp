@@ -55,6 +55,48 @@ void edgeCluster(){
 	}
 }
 
+//Hausdorff距离
+list<Cluster*> rangeSearch(Cluster* cluster, list<Cluster*> &clusters, double dist, int mc){
+	list<Cluster*> result = list<Cluster*>();
+	for (auto cluster2 : clusters){
+		if (cluster2->clusterObjects.size() >= mc){
+			map<GeoPoint*, double> dists = map<GeoPoint*, double>();
+			double tmp1Max = -1;
+			double tmp2Max = -1;
+			for (auto point2 : cluster2->clusterObjects){
+				double tmp1Min = 10000000;
+				for (auto point : cluster->clusterObjects){
+					double tmp1Dist = GeoPoint::distM(point, point2);
+					if (tmp1Dist < tmp1Min){
+						tmp1Min = tmp1Dist;
+					}
+					if (dists.find(point) == dists.end()){
+						dists.insert(make_pair(point, tmp1Dist));
+					}
+					else{
+						if (dists.at(point)>tmp1Dist){
+							dists.at(point) = tmp1Dist;
+						}
+					}
+				}
+				if (tmp1Min > tmp1Max){
+					tmp1Max = tmp1Min;
+				}
+			}
+			for (auto ddd : dists){
+				if (ddd.second > tmp2Max){
+					tmp2Max = ddd.second;
+				}
+			}
+			tmp1Max = tmp2Max > tmp1Max ? tmp2Max : tmp1Max;
+			if (tmp1Max <= dist){
+				result.push_back(cluster2);
+			}
+			dists.clear();
+		}
+	}
+}
+
 //naive方法的辅助函数：判断给定的两个路段聚类是否满足扩展条件：满足返回true；否则返回false
 bool couldExtendOrNot(set<int> &set1, set<int> &set2, int &intersectionCount){
 	set<int> unionResult = set<int>();
