@@ -6,7 +6,7 @@
 using namespace std;
 
 Map routeNetwork;
-string filePath = "D:\\Document\\Subjects\\Computer\\Develop\\Data\\SingaporeData\\";
+string filePath = "D:\\Document\\MDM Lab\\Data\\新加坡轨迹数据\\";
 
 //序列结果
 struct DensityEdges{
@@ -23,8 +23,10 @@ struct DensityEdges{
 	}
 };
 
-//序列结果集合
-list<DensityEdges*> resultLists = list<DensityEdges*>();
+
+list<DensityEdges*> resultLists = list<DensityEdges*>();//序列结果集合
+set<Edge*> distinctEdges = set<Edge*>();//序列结果路段集合
+list<GeoPoint*> resultPoints = list<GeoPoint*>();//序列点集
 
 //读入序列结果文件
 void readInResult(string resultFilePath){
@@ -37,8 +39,6 @@ void readInResult(string resultFilePath){
 		char useless;
 		fin >> count >> useless >> startTime >> useless >> endTime;
 		DensityEdges* result = new DensityEdges(startTime, endTime);
-		//cout << startTime << " " << endTime<<endl;
-		//system("pause");
 		int edgeIndex;
 		int index2 = 0;
 		while (index2 < count){
@@ -72,24 +72,78 @@ void getTimeStatistic(){
 
 //统计结果路段数量
 void getDistinctEdges(){
-	set<Edge*> distinctEdges = set<Edge*>();
 	for (auto result : resultLists){
-		for (auto resultEdge:result->resultEdges){
+		for (auto resultEdge : result->resultEdges){
 			if (distinctEdges.find(resultEdge) == distinctEdges.end()){
 				distinctEdges.insert(resultEdge);
 			}
 		}
 	}
 	cout << "共有" << distinctEdges.size() << "条不相同的边" << endl;
-	for (auto edge : distinctEdges){
-		cout << edge->id << " ";
+}
+
+//把序列结果路段转为json文件
+void distinctEdgesToJson(){
+	ofstream fout("Edges.js");
+	fout.precision(11);
+	fout << "data = " << endl;
+	fout << "{\"city\":\"Singapore\"," << endl;
+	fout << "\"edges\":[";
+	int edgeIndex = 0;
+	for each(Edge* edge in distinctEdges){
+		if (edge != NULL){
+			if (edgeIndex > 0){
+				fout << "," << endl;
+			}
+			fout << "{\"edgeId\":" << edge->id << ",\"numOfFigures\":" << edge->figure->size() << ",\"figures\":[";
+			size_t figureIndex = 0;
+			for each (GeoPoint* figPoint in *(edge->figure)){
+				fout << "{\"x\":" << figPoint->lon << ",\"y\":" << figPoint->lat << "}";
+				if (figureIndex < edge->figure->size() - 1){
+					fout << ",";
+				}
+				figureIndex++;
+			}
+			fout << "]}";
+		}
+		edgeIndex++;
 	}
-	cout << endl;
+	fout << "]}" << endl;
+	fout.close();
+}
+
+//把序列结果采样点转为json文件
+void pointsToJson(){
+	ofstream fout("Points.js");
+	fout.precision(11);
+	fout << "data = " << endl;
+	fout << "{\"city\":\"Singapore\"," << endl;
+	if (resultPoints.size() > 0){
+		fout << "\"trajPoints\":[";
+		size_t trajPointIndex = 0;
+		for each (GeoPoint* trajPoint in resultPoints)
+		{
+			fout << "{\"x\":" << trajPoint->lon << ",\"y\":" << trajPoint->lat << "}";
+			if (trajPointIndex < resultPoints.size() - 1){
+				fout << ",";
+			}
+			trajPointIndex++;
+		}
+		fout << "]}";
+	}
+	fout.close();
 }
 
 int main(){
 	routeNetwork = Map(filePath, 500);
-	readInResult("result_day1_withtime.txt");
-	//getTimeStatistic();
+	//readInResult("result_day1_withtime.txt");
+	//readInResult("result_day2_withtime.txt");
+	//readInResult("result_day3_withtime.txt");
+	//readInResult("result_day4_M3_483.txt");
+	//readInResult("result_day5_M3_483.txt");
+	//readInResult("result_day6_M3_479.txt");
+	readInResult("result_day7_M3_462.txt");
 	getDistinctEdges();
+	getTimeStatistic();
+	//distinctEdgesToJson();
 }
