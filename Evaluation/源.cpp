@@ -108,7 +108,18 @@ void distinctEdgesToJson(){
 		}
 		edgeIndex++;
 	}
-	fout << "]}" << endl;
+	fout << "]," << endl;
+	fout << "\"trajPoints\":[";
+	size_t trajPointIndex = 0;
+	for each (GeoPoint* trajPoint in resultPoints)
+	{
+		fout << "{\"x\":" << trajPoint->lon << ",\"y\":" << trajPoint->lat << "}";
+		if (trajPointIndex < resultPoints.size() - 1){
+			fout << ",";
+		}
+		trajPointIndex++;
+	}
+	fout << "]}";
 	fout.close();
 }
 
@@ -119,31 +130,22 @@ void pointsToJson(){
 	fout << "data = " << endl;
 	fout << "{\"city\":\"Singapore\"," << endl;
 	if (resultPoints.size() > 0){
-		fout << "\"trajPoints\":[";
-		size_t trajPointIndex = 0;
-		for each (GeoPoint* trajPoint in resultPoints)
-		{
-			fout << "{\"x\":" << trajPoint->lon << ",\"y\":" << trajPoint->lat << "}";
-			if (trajPointIndex < resultPoints.size() - 1){
-				fout << ",";
-			}
-			trajPointIndex++;
-		}
-		fout << "]}";
+		
 	}
 	fout.close();
 }
 
 int main(){
 	routeNetwork = Map(filePath, 500);
+	readInResult("result.txt");
 	//readInResult("result_day1_withtime.txt");
 	//readInResult("result_day2_withtime.txt");
 	//readInResult("result_day3_withtime.txt");
 	//readInResult("result_day4_M3_483.txt");
 	//readInResult("result_day5_M3_483.txt");
 	//readInResult("result_day6_M3_479.txt");
-	readInResult("result_day7_M3_462.txt");
+	//readInResult("result_day7_M3_462.txt");
 	getDistinctEdges();
-	getTimeStatistic();
-	//distinctEdgesToJson();
+	//getTimeStatistic();
+	distinctEdgesToJson();
 }

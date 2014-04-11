@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RawTrajsProcess", "RawTrajs
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Evaluation", "Evaluation\Evaluation.vcxproj", "{4ABA107F-5CCA-4B66-8667-921AA9430A43}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AverageSpeed", "AverageSpeed\AverageSpeed.vcxproj", "{7B63D81F-72C4-430C-A027-54500C1972C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +35,10 @@ Global
 		{4ABA107F-5CCA-4B66-8667-921AA9430A43}.Debug|Win32.Build.0 = Debug|Win32
 		{4ABA107F-5CCA-4B66-8667-921AA9430A43}.Release|Win32.ActiveCfg = Release|Win32
 		{4ABA107F-5CCA-4B66-8667-921AA9430A43}.Release|Win32.Build.0 = Release|Win32
+		{7B63D81F-72C4-430C-A027-54500C1972C1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7B63D81F-72C4-430C-A027-54500C1972C1}.Debug|Win32.Build.0 = Debug|Win32
+		{7B63D81F-72C4-430C-A027-54500C1972C1}.Release|Win32.ActiveCfg = Release|Win32
+		{7B63D81F-72C4-430C-A027-54500C1972C1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

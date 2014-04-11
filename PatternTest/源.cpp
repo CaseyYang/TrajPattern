@@ -1,4 +1,6 @@
 #include <iostream>
+#include <iterator>
+#include <time.h>
 #include "ReadInTrajs.h"
 #include "Map.h"
 #include "TimeSlice.h"
@@ -7,7 +9,7 @@
 using namespace std;
 
 Map routeNetwork;
-string filePath = "E:\\Document\\Subjects\\Computer\Data\\新加坡轨迹数据\\";
+string filePath = "D:\\MapMatchingProject\\Data\\新加坡数据\\";
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> resultsList;//结果
 
@@ -55,54 +57,12 @@ void edgeCluster(){
 	}
 }
 
-//Hausdorff距离
-list<Cluster*> rangeSearch(Cluster* cluster, list<Cluster*> &clusters, double dist, int mc){
-	list<Cluster*> result = list<Cluster*>();
-	for (auto cluster2 : clusters){
-		if (cluster2->clusterObjects.size() >= mc){
-			map<GeoPoint*, double> dists = map<GeoPoint*, double>();
-			double tmp1Max = -1;
-			double tmp2Max = -1;
-			for (auto point2 : cluster2->clusterObjects){
-				double tmp1Min = 10000000;
-				for (auto point : cluster->clusterObjects){
-					double tmp1Dist = GeoPoint::distM(point, point2);
-					if (tmp1Dist < tmp1Min){
-						tmp1Min = tmp1Dist;
-					}
-					if (dists.find(point) == dists.end()){
-						dists.insert(make_pair(point, tmp1Dist));
-					}
-					else{
-						if (dists.at(point)>tmp1Dist){
-							dists.at(point) = tmp1Dist;
-						}
-					}
-				}
-				if (tmp1Min > tmp1Max){
-					tmp1Max = tmp1Min;
-				}
-			}
-			for (auto ddd : dists){
-				if (ddd.second > tmp2Max){
-					tmp2Max = ddd.second;
-				}
-			}
-			tmp1Max = tmp2Max > tmp1Max ? tmp2Max : tmp1Max;
-			if (tmp1Max <= dist){
-				result.push_back(cluster2);
-			}
-			dists.clear();
-		}
-	}
-}
-
 //naive方法的辅助函数：判断给定的两个路段聚类是否满足扩展条件：满足返回true；否则返回false
 bool couldExtendOrNot(set<int> &set1, set<int> &set2, int &intersectionCount){
 	set<int> unionResult = set<int>();
-	set_union(set1.begin(), set1.end(), set2.begin(), set2.end(), unionResult.begin());
+	set_union(set1.begin(), set1.end(), set2.begin(), set2.end(), inserter(unionResult, unionResult.begin()));
 	set<int> intersectionResult = set<int>();
-	set_intersection(set1.begin(), set1.end(), set2.begin(), set2.end(), intersectionResult.begin());
+	set_intersection(set1.begin(), set1.end(), set2.begin(), set2.end(), inserter(intersectionResult, intersectionResult.begin()));
 	intersectionCount = intersectionResult.size();
 	double similarity = (intersectionResult.size() + 0.0) / unionResult.size();
 	return similarity >= DE_MINSIMILARITY;
@@ -227,7 +187,7 @@ list<list<EdgeCluster*>> methodWithKPruning(){
 
 //利用后续匹配路段信息的方法的辅助函数：在下一时间片中扩展给定的路段聚类
 //利用后续匹配路段信息：与之前方法枚举下一时间片中的所有路段聚类不同，只枚举当前路段聚类中所含轨迹的后续匹配路段所在的路段聚类
-list<EdgeCluster*> extendDensityEdgesWithKPruning(EdgeCluster* edgeCluster){
+list<EdgeCluster*> extendDensityEdgesWithKPruningAndMoreInfo(EdgeCluster* edgeCluster){
 	list<EdgeCluster*> result = list<EdgeCluster*>();
 	if (edgeCluster->time < timeSlices.size() - 1){
 		for (auto edge : edgeCluster->priorCanadidates){//和带k值剪枝的方法相比，就是这句话不一样；这句话以后都是一样的
@@ -263,7 +223,7 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo(){
 		for (auto canadidate : canadidates){
 			EdgeCluster* lastSnapshotCluster = canadidate.back();
 			lastSnapshotCluster->k = 0;
-			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdgesWithKPruning(lastSnapshotCluster);
+			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdgesWithKPruningAndMoreInfo(lastSnapshotCluster);
 			if (assignedEdgeClusters.size() == 0){
 				if (canadidate.size() >= DE_DURATIVE){//满足持续性条件
 					resultsList.push_back(canadidate);
@@ -293,5 +253,23 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo(){
 int main(){
 	routeNetwork = Map(filePath, 500);//建立路网
 	edgeCluster();
+	clock_t start, finish;
+	start = clock();
+	list<list<EdgeCluster*>> result = methodWithKPruningAndMoreInfo();
+	finish = clock();
+	cout << "用时：" << finish - start << "毫秒" << endl;
+	int index = 0;
+	ofstream fout("result.txt");
+	fout << result.size() << endl;
+	for (auto resultList : result){
+		cout << "结果包含" << resultList.size() << "个结果" << endl;
+		fout << resultList.size() << ":" << resultList.front()->time << "~" << resultList.back()->time << " ";
+		for (auto resultEdge : resultList){
+			fout << resultEdge->clusterCoreEdge->id << ",";
+		}
+		fout << endl;
+		index++;
+	}
+	fout.close();
 	return 0;
 }
