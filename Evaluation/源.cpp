@@ -58,7 +58,7 @@ void getTimeStatistic(){
 	for (int i = 0; i < 24; i++){
 		timeStatistic.insert(make_pair(i, 0));
 	}
-	ofstream fout("statistic.txt");
+	ofstream fout("timeStatistic.txt");
 	for (auto result : resultLists){
 		for (int time = result->startTime / 60; time <= result->endTime / 60; time++){
 			timeStatistic.at(time)++;
@@ -80,6 +80,39 @@ void getDistinctEdges(){
 		}
 	}
 	cout << "共有" << distinctEdges.size() << "条不相同的边" << endl;
+}
+
+//统计结果路段的平均车速
+void getAverageSpeed(){
+	map<int, double> speedStatistic = map<int, double>();
+	vector<int> speedCount = vector<int>();
+	for (int i = 0; i < 24; i++){
+		speedStatistic.insert(make_pair(i, 0));
+		speedCount.push_back(0);
+	}
+	for (auto result : resultLists){
+		double dist = 0;
+		if (result->resultEdges.front() != result->resultEdges.back()){
+			int startId = result->resultEdges.front()->startNodeId;
+			int endId = result->resultEdges.back()->startNodeId;
+			list<Edge*> edges = list<Edge*>();
+			dist = routeNetwork.shortestPathLength(startId, endId, edges) + result->resultEdges.back()->lengthM;
+		}
+		else{
+			dist = result->resultEdges.front()->lengthM;
+		}
+		double averageSpeed = dist / ((result->endTime - result->startTime) * 60);
+		for (int time = result->startTime / 60; time <= result->endTime / 60; time++){
+			speedStatistic.at(time) += averageSpeed;
+			speedCount.at(time)++;
+		}
+	}
+	ofstream fout("speedStatistic.txt");
+	fout.precision(8);
+	for (auto pair : speedStatistic){
+		fout << pair.first << "\t" << pair.second / speedCount.at(pair.first) << endl;
+	}
+	fout.close();
 }
 
 //把序列结果路段转为json文件
@@ -130,7 +163,7 @@ void pointsToJson(){
 	fout << "data = " << endl;
 	fout << "{\"city\":\"Singapore\"," << endl;
 	if (resultPoints.size() > 0){
-		
+
 	}
 	fout.close();
 }
@@ -147,5 +180,6 @@ int main(){
 	//readInResult("result_day7_M3_462.txt");
 	getDistinctEdges();
 	//getTimeStatistic();
-	distinctEdgesToJson();
+	//distinctEdgesToJson();
+	getAverageSpeed();
 }
