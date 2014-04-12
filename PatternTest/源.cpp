@@ -6,6 +6,7 @@
 #include "TimeSlice.h"
 #include "NewTimeSlice.h"
 #include "Parameters.h"
+#include "Evaluation.h"
 using namespace std;
 
 Map routeNetwork;
@@ -251,24 +252,39 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo(){
 }
 
 int main(){
+	//建立路网；读入地图匹配结果并构造路段聚类
 	routeNetwork = Map(filePath, 500);//建立路网
-	edgeCluster();
+	edgeCluster();//读入地图匹配结果并构造路段聚类
+
+	//挖掘路段序列
 	clock_t start, finish;
 	start = clock();
 	list<list<EdgeCluster*>> result = methodWithKPruningAndMoreInfo();
 	finish = clock();
 	cout << "用时：" << finish - start << "毫秒" << endl;
-	int index = 0;
+
+	//评估路段序列
+	filterInvalidEdgeSet();
+	getDistinctEdges();
+	getTimeStatistic();
+	getAverageSpeed();
+
+
+	//输出路段序列
 	ofstream fout("result.txt");
 	fout << result.size() << endl;
 	for (auto resultList : result){
-		cout << "结果包含" << resultList.size() << "个结果" << endl;
+		//cout << "结果包含" << resultList.size() << "个结果" << endl;
 		fout << resultList.size() << ":" << resultList.front()->time << "~" << resultList.back()->time << " ";
+		int lastId = -1;
 		for (auto resultEdge : resultList){
-			fout << resultEdge->clusterCoreEdge->id << ",";
+			int id = resultEdge->clusterCoreEdge->id;
+			if (lastId != id){
+				fout << id << ",";
+			}
+			lastId = id;
 		}
 		fout << endl;
-		index++;
 	}
 	fout.close();
 	return 0;

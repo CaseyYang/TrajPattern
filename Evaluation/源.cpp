@@ -3,20 +3,27 @@
 #include <string>
 #include <list>
 #include "Map.h"
+#include "ReadInTrajs.h"
 using namespace std;
 
 Map routeNetwork;
-string filePath = "D:\\Document\\MDM Lab\\Data\\新加坡轨迹数据\\";
+string filePath = "E:\\Document\\Subjects\\Computer\\Data\\新加坡路网及轨迹数据\\";
+list<Traj*> trajsList = list<Traj*>();
+int invalidEdges[] = { 55402, 27454, 27489, 55435 };
+set<int> invalidEdgeSet = set<int>();
+
 
 //序列结果
 struct DensityEdges{
 	int startTime;
 	int endTime;
+	int resultId;
 	list<Edge*> resultEdges;
-	DensityEdges(int start, int end){
+	DensityEdges(int start, int end, int resultId){
 		this->startTime = start;
 		this->endTime = end;
 		resultEdges = list<Edge*>();
+		this->resultId = resultId;
 	}
 	void add(Edge* edge){
 		resultEdges.push_back(edge);
@@ -29,27 +36,41 @@ set<Edge*> distinctEdges = set<Edge*>();//序列结果路段集合
 list<GeoPoint*> resultPoints = list<GeoPoint*>();//序列点集
 
 //读入序列结果文件
-void readInResult(string resultFilePath){
+void readInResult(string resultFilePath, int resultId){
 	ifstream fin(resultFilePath);
 	int totalCount = 0;
 	fin >> totalCount;
-	int index = 0;
+	int index = 0, validIndex = 0;
 	while (index < totalCount){
 		int count = 0, startTime = -1, endTime = -1;
 		char useless;
 		fin >> count >> useless >> startTime >> useless >> endTime;
-		DensityEdges* result = new DensityEdges(startTime, endTime);
+		DensityEdges* result = new DensityEdges(startTime, endTime, resultId);
 		int edgeIndex;
 		int index2 = 0;
+		bool valid = true;
 		while (index2 < count){
 			fin >> edgeIndex >> useless;
-			result->add(routeNetwork.edges.at(edgeIndex));
+			if (valid&&invalidEdgeSet.find(edgeIndex) == invalidEdgeSet.end()){
+				result->add(routeNetwork.edges.at(edgeIndex));
+			}
+			else{
+				valid = false;
+			}
 			index2++;
 		}
-		resultLists.push_back(result);
+		if (valid){
+			resultLists.push_back(result);
+			validIndex++;
+		}
+		else
+		{
+			delete result;
+		}
 		index++;
 	}
 	fin.close();
+	cout << "共得到" << validIndex << "条有效结果序列" << endl;
 }
 
 //统计结果时间分布
@@ -92,16 +113,14 @@ void getAverageSpeed(){
 	}
 	for (auto result : resultLists){
 		double dist = 0;
-		if (result->resultEdges.front() != result->resultEdges.back()){
-			int startId = result->resultEdges.front()->startNodeId;
-			int endId = result->resultEdges.back()->startNodeId;
-			list<Edge*> edges = list<Edge*>();
-			dist = routeNetwork.shortestPathLength(startId, endId, edges) + result->resultEdges.back()->lengthM;
+		Edge* lastResultEdge = NULL;
+		for (auto resultEdge : result->resultEdges){
+			if (resultEdge != lastResultEdge){
+				dist += resultEdge->lengthM;
+			}
+			lastResultEdge = resultEdge;
 		}
-		else{
-			dist = result->resultEdges.front()->lengthM;
-		}
-		double averageSpeed = dist / ((result->endTime - result->startTime) * 60);
+		double averageSpeed = (dist / ((result->endTime - result->startTime) * 60))*3.6;
 		for (int time = result->startTime / 60; time <= result->endTime / 60; time++){
 			speedStatistic.at(time) += averageSpeed;
 			speedCount.at(time)++;
@@ -110,7 +129,12 @@ void getAverageSpeed(){
 	ofstream fout("speedStatistic.txt");
 	fout.precision(8);
 	for (auto pair : speedStatistic){
-		fout << pair.first << "\t" << pair.second / speedCount.at(pair.first) << endl;
+		if (speedCount.at(pair.first) > 0){
+			fout << pair.first << "\t" << pair.second / speedCount.at(pair.first) << "\t" << speedCount.at(pair.first) << endl;
+		}
+		else{
+			fout << pair.first << "\t0\t0" << endl;
+		}
 	}
 	fout.close();
 }
@@ -170,14 +194,16 @@ void pointsToJson(){
 
 int main(){
 	routeNetwork = Map(filePath, 500);
-	readInResult("result.txt");
-	//readInResult("result_day1_withtime.txt");
-	//readInResult("result_day2_withtime.txt");
-	//readInResult("result_day3_withtime.txt");
-	//readInResult("result_day4_M3_483.txt");
-	//readInResult("result_day5_M3_483.txt");
-	//readInResult("result_day6_M3_479.txt");
-	//readInResult("result_day7_M3_462.txt");
+	for (auto invalidEdge : invalidEdges){
+		invalidEdgeSet.insert(invalidEdge);
+	}
+	readInResult("result_day1_withtime.txt", 1);
+	readInResult("result_day2_withtime.txt", 2);
+	readInResult("result_day3_withtime.txt", 3);
+	readInResult("result_day4_M3_483.txt", 4);
+	readInResult("result_day5_M3_483.txt", 5);
+	readInResult("result_day6_M3_479.txt", 6);
+	readInResult("result_day7_M3_462.txt", 7);
 	getDistinctEdges();
 	//getTimeStatistic();
 	//distinctEdgesToJson();
