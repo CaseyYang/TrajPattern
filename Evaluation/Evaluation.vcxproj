@@ -78,7 +78,7 @@
   <ItemGroup>
     <ClCompile Include="GeoPoint.cpp" />
     <ClCompile Include="Map.cpp" />
-    <ClCompile Include="源.cpp" />
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeoPoint.h" />

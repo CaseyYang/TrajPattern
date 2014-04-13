@@ -1,13 +1,16 @@
 #include <iostream>
+#include <iterator>
+#include <time.h>
 #include "ReadInTrajs.h"
 #include "Map.h"
 #include "TimeSlice.h"
 #include "NewTimeSlice.h"
 #include "Parameters.h"
+#include "Evaluation.h"
 using namespace std;
 
 Map routeNetwork;
-string filePath = "E:\\Document\\Subjects\\Computer\Data\\新加坡轨迹数据\\";
+string filePath = "D:\\MapMatchingProject\\Data\\新加坡数据\\";
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> resultsList;//结果
 
@@ -58,9 +61,9 @@ void edgeCluster(){
 //naive方法的辅助函数：判断给定的两个路段聚类是否满足扩展条件：满足返回true；否则返回false
 bool couldExtendOrNot(set<int> &set1, set<int> &set2, int &intersectionCount){
 	set<int> unionResult = set<int>();
-	set_union(set1.begin(), set1.end(), set2.begin(), set2.end(), unionResult.begin());
+	set_union(set1.begin(), set1.end(), set2.begin(), set2.end(), inserter(unionResult, unionResult.begin()));
 	set<int> intersectionResult = set<int>();
-	set_intersection(set1.begin(), set1.end(), set2.begin(), set2.end(), intersectionResult.begin());
+	set_intersection(set1.begin(), set1.end(), set2.begin(), set2.end(), inserter(intersectionResult, intersectionResult.begin()));
 	intersectionCount = intersectionResult.size();
 	double similarity = (intersectionResult.size() + 0.0) / unionResult.size();
 	return similarity >= DE_MINSIMILARITY;
@@ -185,7 +188,7 @@ list<list<EdgeCluster*>> methodWithKPruning(){
 
 //利用后续匹配路段信息的方法的辅助函数：在下一时间片中扩展给定的路段聚类
 //利用后续匹配路段信息：与之前方法枚举下一时间片中的所有路段聚类不同，只枚举当前路段聚类中所含轨迹的后续匹配路段所在的路段聚类
-list<EdgeCluster*> extendDensityEdgesWithKPruning(EdgeCluster* edgeCluster){
+list<EdgeCluster*> extendDensityEdgesWithKPruningAndMoreInfo(EdgeCluster* edgeCluster){
 	list<EdgeCluster*> result = list<EdgeCluster*>();
 	if (edgeCluster->time < timeSlices.size() - 1){
 		for (auto edge : edgeCluster->priorCanadidates){//和带k值剪枝的方法相比，就是这句话不一样；这句话以后都是一样的
@@ -221,7 +224,7 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo(){
 		for (auto canadidate : canadidates){
 			EdgeCluster* lastSnapshotCluster = canadidate.back();
 			lastSnapshotCluster->k = 0;
-			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdgesWithKPruning(lastSnapshotCluster);
+			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdgesWithKPruningAndMoreInfo(lastSnapshotCluster);
 			if (assignedEdgeClusters.size() == 0){
 				if (canadidate.size() >= DE_DURATIVE){//满足持续性条件
 					resultsList.push_back(canadidate);
@@ -249,7 +252,40 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo(){
 }
 
 int main(){
+	//建立路网；读入地图匹配结果并构造路段聚类
 	routeNetwork = Map(filePath, 500);//建立路网
-	edgeCluster();
+	edgeCluster();//读入地图匹配结果并构造路段聚类
+
+	//挖掘路段序列
+	clock_t start, finish;
+	start = clock();
+	list<list<EdgeCluster*>> result = methodWithKPruningAndMoreInfo();
+	finish = clock();
+	cout << "用时：" << finish - start << "毫秒" << endl;
+
+	//评估路段序列
+	filterInvalidEdgeSet();
+	getDistinctEdges();
+	getTimeStatistic();
+	getAverageSpeed();
+
+
+	//输出路段序列
+	ofstream fout("result.txt");
+	fout << result.size() << endl;
+	for (auto resultList : result){
+		//cout << "结果包含" << resultList.size() << "个结果" << endl;
+		fout << resultList.size() << ":" << resultList.front()->time << "~" << resultList.back()->time << " ";
+		int lastId = -1;
+		for (auto resultEdge : resultList){
+			int id = resultEdge->clusterCoreEdge->id;
+			if (lastId != id){
+				fout << id << ",";
+			}
+			lastId = id;
+		}
+		fout << endl;
+	}
+	fout.close();
 	return 0;
 }
