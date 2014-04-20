@@ -39,6 +39,9 @@
     <ClInclude Include="Parameters.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Evaluation.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ReadInTrajs.cpp">
@@ -48,9 +51,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Map.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="源.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Cluster.cpp">
@@ -63,6 +63,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="NewTimeSlice.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Evaluation.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
