@@ -259,33 +259,19 @@ int main(){
 	//挖掘路段序列
 	clock_t start, finish;
 	start = clock();
-	list<list<EdgeCluster*>> result = methodWithKPruningAndMoreInfo();
+	resultsList = methodWithKPruningAndMoreInfo();
 	finish = clock();
 	cout << "用时：" << finish - start << "毫秒" << endl;
 
 	//评估路段序列
-	filterInvalidEdgeSet();
+	cout << "共得到" << resultsList.size() << "个模式序列" << endl;
 	getDistinctEdges();
+	filterInvalidEdgeSet();
+	//getDistinctEdges();
 	getTimeStatistic();
 	getAverageSpeed();
 
-
 	//输出路段序列
-	ofstream fout("result.txt");
-	fout << result.size() << endl;
-	for (auto resultList : result){
-		//cout << "结果包含" << resultList.size() << "个结果" << endl;
-		fout << resultList.size() << ":" << resultList.front()->time << "~" << resultList.back()->time << " ";
-		int lastId = -1;
-		for (auto resultEdge : resultList){
-			int id = resultEdge->clusterCoreEdge->id;
-			if (lastId != id){
-				fout << id << ",";
-			}
-			lastId = id;
-		}
-		fout << endl;
-	}
-	fout.close();
+	//outputResults("filteredResults.txt");
 	return 0;
 }
