@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace EdgePopularity
 {
@@ -85,7 +88,7 @@ namespace EdgePopularity
             return max;
         }
 
-        static void Main(string[] args)
+        static void GetAllEdgesPopularity()
         {
             //读入7个文件夹中的地图匹配结果，得到每个路段对应的热度
             string[] weekendsPaths = { @"D:\MapMatchingProject\Data\新加坡数据\day1\day1_output", @"D:\MapMatchingProject\Data\新加坡数据\day2\day2_output" };
@@ -109,6 +112,87 @@ namespace EdgePopularity
             weekendsMax = MergeEdgeCounts(weekdaysEdgesCounts, weekendsEdgesCounts, weekendsMax);
             Dictionary<int, double> totalEdgesPopularity = GetEdgesPopularity(weekendsEdgesCounts, weekendsMax);
             OutputEdgesPopularity(totalEdgesPopularity, "totalEdgesPopularity.txt");
+        }
+
+        static Dictionary<int, double> ReadInEdgesPopularity(string fileName)
+        {
+            Dictionary<int, double> result = new Dictionary<int, double>();
+            StreamReader fReader = new StreamReader(fileName);
+            string countStr = fReader.ReadLine();
+            while (!fReader.EndOfStream)
+            {
+                string[] rawStrs = fReader.ReadLine().Split(' ');
+                int edge = Int32.Parse(rawStrs[0]);
+                double popularity = Double.Parse(rawStrs[1]);
+                result.Add(edge, popularity);
+            }
+            fReader.Close();
+            return result;
+        }
+
+        static HashSet<int> ReadInEdges(string directoryPath, HashSet<int> edges)
+        {
+            DirectoryInfo directory = new DirectoryInfo(directoryPath);
+            FileInfo[] files = directory.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                StreamReader fReader = new StreamReader(file.FullName);
+                string countStr = fReader.ReadLine();
+                while (!fReader.EndOfStream)
+                {
+                    int edge = Int32.Parse(fReader.ReadLine());
+                    if (!edges.Contains(edge))
+                    {
+                        edges.Add(edge);
+                    }
+                }
+                fReader.Close();
+            }
+            return edges;
+        }
+
+        static void GetAveragePopularity(Dictionary<int, double> edgePopularity, HashSet<int> edges)
+        {
+            double averagePopularity = 0;
+            foreach (int edge in edges)
+            {
+                averagePopularity += edgePopularity[edge];
+            }
+            averagePopularity /= edges.Count;
+            Console.WriteLine("平均热度为" + averagePopularity);
+        }
+
+        static void Main(string[] args)
+        {
+            #region 得到所有路段的热度值
+            //GetAllEdgesPopularity();
+            #endregion
+
+            #region 读入路段并计算平均热度值
+            //读入工作日的路段
+            Console.WriteLine("工作日：");
+            HashSet<int> weekdaysEdges = new HashSet<int>();
+            Dictionary<int, double> weekdaysEdgesPopularity = ReadInEdgesPopularity("weekdaysEdgesPopularity.txt");
+            ReadInEdges(@"D:\MapMatchingProject\Data\新加坡数据\有效性实验\10_0.5_10\weekdays", weekdaysEdges);
+            GetAveragePopularity(weekdaysEdgesPopularity, weekdaysEdges);
+            //读入双休日的路段
+            Console.WriteLine("双休日：");
+            HashSet<int> weekendsEdges = new HashSet<int>();
+            Dictionary<int, double> weekendsEdgesPopularity = ReadInEdgesPopularity("weekendsEdgesPopularity.txt");
+            ReadInEdges(@"D:\MapMatchingProject\Data\新加坡数据\有效性实验\10_0.5_10\weekends", weekendsEdges);
+            GetAveragePopularity(weekendsEdgesPopularity, weekendsEdges);
+            //合并
+            foreach (int edge in weekendsEdges)
+            {
+                if (!weekdaysEdges.Contains(edge))
+                {
+                    weekdaysEdges.Add(edge);
+                }
+            }
+            Console.WriteLine("总体：");
+            Dictionary<int, double> allDaysEdgesPopularity = ReadInEdgesPopularity("totalEdgesPopularity.txt");
+            GetAveragePopularity(allDaysEdgesPopularity, weekdaysEdges);
+            #endregion
         }
     }
 }
