@@ -9,6 +9,7 @@ using namespace std;
 class Cluster{
 public:
 	set<GeoPoint*> clusterObjects;//聚类所包含的轨迹采样点集合
+	set<int> objectIds;//聚类包含的轨迹采样点所在的轨迹Id集合
 	int time;//聚类所属时间
 
 	Cluster(int time);//构造函数，参数为聚类所属时间
