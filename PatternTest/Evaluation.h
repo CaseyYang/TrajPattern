@@ -1,4 +1,6 @@
+#pragma once
 #include "Map.h"
+#include "Cluster.h"
 #include "EdgeCluster.h"
 
 extern list<list<EdgeCluster*>> resultsList;
@@ -15,20 +17,24 @@ struct SubTraj{
 	void refresh(Edge* edge);
 	//返回子轨迹的平均速度，单位为米/秒
 	double calculateAverageSpeed();
+	//输出子轨迹信息
+	void outputSubTraj();
 };
-
-int invalidEdges[] = { 55402, 27454, 27489, 55435 };
-set<int> invalidEdgeSet = set<int>();
-set<Edge*> distinctEdges = set<Edge*>();//序列结果路段集合
 
 //构造需要过滤的路段序列
 void filterInvalidEdgeSet();
 
 //计算结果序列集合中所有包含的子轨迹的平均速度
-vector<double> getAverageSpeed();
+void getAverageSpeed();
 
 //统计结果路段数量
 void getDistinctEdges();
 
 //统计结果时间分布
 void getTimeStatistic();
+
+//输出结果序列集合
+void outputResults(string fileName);
+
+//输出某个时间片的聚类结果
+void outputDBSCANResult(list<Cluster*> &clusters);

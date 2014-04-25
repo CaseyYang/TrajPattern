@@ -15,7 +15,7 @@ vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> resultsList;//结果
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
-void clusterDemo(){
+vector<TimeSlice*> clusterDemo(){
 	vector<TimeSlice*> timeSlices = vector<TimeSlice*>(1440);//初始化时间片集合
 	int timeStamp = 0;
 	for (int timeStamp = 0; timeStamp < 1440; timeStamp++){
@@ -39,6 +39,25 @@ void clusterDemo(){
 	{
 		timeSlice->clustering(routeNetwork);
 	}
+	//输出某个时间片的聚类结果
+	timeSlices[10 * 60]->clustering(routeNetwork);
+	outputDBSCANResult(timeSlices[10 * 60]->clusters);
+	return timeSlices;
+}
+
+//输出TimeSlice
+void outputTimeSlices(vector<TimeSlice*> &timeSlices){
+	ofstream fout("DBScanResult_day5.txt");
+	for (auto timeSlice : timeSlices){
+		fout << timeSlice->time << ":" << timeSlice->clusters.size() << endl;
+		for (auto cluster : timeSlice->clusters){
+			for (auto object : cluster->objectIds){
+				fout << object << " ";
+			}
+			fout << endl;
+		}
+	}
+	fout.close();
 }
 
 //实验准备工作：读取地图匹配结果，组成各时间片的路段聚类
@@ -259,33 +278,19 @@ int main(){
 	//挖掘路段序列
 	clock_t start, finish;
 	start = clock();
-	list<list<EdgeCluster*>> result = methodWithKPruningAndMoreInfo();
+	resultsList = methodWithKPruningAndMoreInfo();
 	finish = clock();
 	cout << "用时：" << finish - start << "毫秒" << endl;
 
 	//评估路段序列
-	filterInvalidEdgeSet();
+	cout << "共得到" << resultsList.size() << "个模式序列" << endl;
 	getDistinctEdges();
+	filterInvalidEdgeSet();
+	//getDistinctEdges();
 	getTimeStatistic();
 	getAverageSpeed();
 
-
 	//输出路段序列
-	ofstream fout("result.txt");
-	fout << result.size() << endl;
-	for (auto resultList : result){
-		//cout << "结果包含" << resultList.size() << "个结果" << endl;
-		fout << resultList.size() << ":" << resultList.front()->time << "~" << resultList.back()->time << " ";
-		int lastId = -1;
-		for (auto resultEdge : resultList){
-			int id = resultEdge->clusterCoreEdge->id;
-			if (lastId != id){
-				fout << id << ",";
-			}
-			lastId = id;
-		}
-		fout << endl;
-	}
-	fout.close();
+	//outputResults("filteredResults.txt");
 	return 0;
 }

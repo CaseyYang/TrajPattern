@@ -3,12 +3,10 @@
 #include <string>
 #include <list>
 #include "Map.h"
-#include "ReadInTrajs.h"
 using namespace std;
 
 Map routeNetwork;
 string filePath = "E:\\Document\\Subjects\\Computer\\Data\\新加坡路网及轨迹数据\\";
-list<Traj*> trajsList = list<Traj*>();
 int invalidEdges[] = { 55402, 27454, 27489, 55435 };
 set<int> invalidEdgeSet = set<int>();
 

@@ -1,3 +1,4 @@
+#pragma once
 #include <set>
 #include "Map.h"
 using namespace std;
