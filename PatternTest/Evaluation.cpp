@@ -187,3 +187,31 @@ void outputResults(string fileName){
 	}
 	fout.close();
 }
+
+//输出某个时间片的聚类结果
+void outputDBSCANResult(list<Cluster*> &clusters){
+	ofstream fout("DBSCANResult.js");
+	fout.precision(11);
+	fout << "data = " << endl;
+	fout << "{\"city\":\"Singapore\"," << endl;
+	fout << "\"clusters\":[";
+	int clusterIndex = 0;
+	for (auto cluster : clusters){
+		if (clusterIndex > 0){
+			fout << "," << endl;
+		}
+		fout << "{\"points\":[";
+		size_t pointIndex = 0;
+		for (auto point : cluster->clusterObjects){
+			fout << "{\"x\":" << point->lon << ",\"y\":" << point->lat << "}";
+			if (pointIndex < cluster->clusterObjects.size() - 1){
+				fout << ",";
+			}
+			pointIndex++;
+		}
+		fout << "]}";
+		clusterIndex++;
+	}
+	fout << "]}";
+	fout.close();
+}

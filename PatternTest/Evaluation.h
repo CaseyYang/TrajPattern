@@ -34,3 +34,6 @@ void getTimeStatistic();
 
 //输出结果序列集合
 void outputResults(string fileName);
+
+//输出某个时间片的聚类结果
+void outputDBSCANResult(list<Cluster*> &clusters);
