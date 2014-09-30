@@ -10,10 +10,13 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CSVPartition.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9B349C46-A77E-4DD5-842D-A32B4E97B7AE}</ProjectGuid>
+    <ProjectGuid>{19B9A193-ED5F-4D5B-8F48-46C979AAF549}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>PatternTest</RootNamespace>
+    <RootNamespace>RawTrajsProcess</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -75,31 +78,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="Cluster.h" />
-    <ClInclude Include="Evaluation.h" />
-    <ClInclude Include="Parameters.h" />
-    <ClInclude Include="EdgeCluster.h" />
-    <ClInclude Include="GeoPoint.h" />
-    <ClInclude Include="Map.h" />
-    <ClInclude Include="NewTimeSlice.h" />
-    <ClInclude Include="ReadInTrajs.h" />
-    <ClInclude Include="TimeSlice.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Cluster.cpp" />
-    <ClCompile Include="EdgeCluster.cpp" />
-    <ClCompile Include="Evaluation.cpp" />
-    <ClCompile Include="GeoPoint.cpp" />
-    <ClCompile Include="Map.cpp" />
-    <ClCompile Include="NewTimeSlice.cpp" />
-    <ClCompile Include="ReadInTrajs.cpp" />
-    <ClCompile Include="TimeSlice.cpp" />
-    <ClCompile Include="Main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="项目说明.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

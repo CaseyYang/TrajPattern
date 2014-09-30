@@ -1,13 +1,5 @@
-#include <sstream>
 #include "ReadInTrajs.h"
 
-int day = 3;
-
-string ToString(int i){
-	stringstream ss;
-	ss << i;
-	return ss.str();
-}
 
 //读入给定路径的轨迹文件中的一条轨迹，把每个轨迹采样点插入对应的时间片中
 void readOneTrajectory(string &filePath, int trajId, vector<TimeSlice*> &timeSlices)
@@ -67,7 +59,7 @@ void scanTrajFolder(string folderDir, vector<TimeSlice*> &timeSlices)
 	* |-output
 	*   |-output_000011.txt ...
 	*/
-	string inputDirectory = "day" + ToString(day) + "\\day" + ToString(day) + "_input";
+	string inputDirectory = "input";
 	string completeInputFilesPath = folderDir + inputDirectory + "\\" + "*.txt";
 	const char* dir = completeInputFilesPath.c_str();
 	_finddata_t fileInfo;//文件信息
@@ -89,7 +81,7 @@ void scanTrajFolder(string folderDir, vector<TimeSlice*> &timeSlices)
 
 //读入地图匹配结果文件，保存时间片
 void scanMapMatchingResultFolder(string folderDir, vector<NewTimeSlice*> &timeSlices, Map &routeNetwork){
-	string inputDirectory = "day" + ToString(day) + "\\day" + ToString(day) + "_output";
+	string inputDirectory = "splited_output";
 	string completeInputFilesPath = folderDir + inputDirectory + "\\" + "*.txt";
 	const char* dir = completeInputFilesPath.c_str();
 	_finddata_t fileInfo;//文件信息
