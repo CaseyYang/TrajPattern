@@ -58,7 +58,7 @@ void readOneMapMatchingResult(string &filePath, int trajId, vector<NewTimeSlice*
 }
 
 //读入文件夹中所有轨迹文件，保存轨迹和时间片
-void scanTrajFolder(string folderDir, vector<TimeSlice*> &timeSlices)
+void scanTrajFolder(string folderDir,string inputDirectory, vector<TimeSlice*> &timeSlices)
 {
 	/*文件目录结构为
 	* folderDir
@@ -67,12 +67,12 @@ void scanTrajFolder(string folderDir, vector<TimeSlice*> &timeSlices)
 	* |-output
 	*   |-output_000011.txt ...
 	*/
-	string inputDirectory = "day" + ToString(day) + "\\day" + ToString(day) + "_input";
 	string completeInputFilesPath = folderDir + inputDirectory + "\\" + "*.txt";
 	const char* dir = completeInputFilesPath.c_str();
 	_finddata_t fileInfo;//文件信息
 	long lf;//文件句柄
 	if ((lf = _findfirst(dir, &fileInfo)) == -1l) {
+		cout << "文件夹" << completeInputFilesPath << "下未找到指定文件！" << endl;
 		return;
 	}
 	else {
@@ -83,13 +83,13 @@ void scanTrajFolder(string folderDir, vector<TimeSlice*> &timeSlices)
 			trajIndex++;
 		} while (_findnext(lf, &fileInfo) == 0);
 		_findclose(lf);
+		cout << "所有轨迹文件读入完毕！" << endl;
 		return;
 	}
 }
 
 //读入地图匹配结果文件，保存时间片
-void scanMapMatchingResultFolder(string folderDir, vector<NewTimeSlice*> &timeSlices, Map &routeNetwork){
-	string inputDirectory = "day" + ToString(day) + "\\day" + ToString(day) + "_output";
+void scanMapMatchingResultFolder(string folderDir, string inputDirectory, vector<NewTimeSlice*> &timeSlices, Map &routeNetwork){
 	string completeInputFilesPath = folderDir + inputDirectory + "\\" + "*.txt";
 	const char* dir = completeInputFilesPath.c_str();
 	_finddata_t fileInfo;//文件信息

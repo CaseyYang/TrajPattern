@@ -9,8 +9,10 @@
 #include "Evaluation.h"
 using namespace std;
 
-Map routeNetwork;
 string filePath = "D:\\MapMatchingProject\\Data\\新加坡数据\\";
+string inputDirectory = "9daysForTrajPattern\\input";
+string answerDirectory = "9daysForTrajPattern\\answer";
+Map routeNetwork(filePath, 500);
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> resultsList;//结果
 
@@ -21,7 +23,7 @@ vector<TimeSlice*> clusterDemo(){
 	for (int timeStamp = 0; timeStamp < 1440; timeStamp++){
 		timeSlices.at(timeStamp) = new TimeSlice(timeStamp);
 	}
-	scanTrajFolder(filePath, timeSlices);//读入轨迹
+	scanTrajFolder(filePath, inputDirectory, timeSlices);//读入轨迹
 	cout << "读入所有轨迹" << endl;
 	int outIndexCount = 0;
 	for each (TimeSlice* timeSlice in timeSlices)//对轨迹采样点建立索引
@@ -67,7 +69,7 @@ void edgeCluster(){
 	for (int timeStamp = 0; timeStamp < 1440; timeStamp++){
 		timeSlices.at(timeStamp) = new NewTimeSlice(timeStamp);
 	}
-	scanMapMatchingResultFolder(filePath, timeSlices, routeNetwork);//读入地图匹配结果文件，填充时间片和路段聚类
+	scanMapMatchingResultFolder(filePath, answerDirectory, timeSlices, routeNetwork);//读入地图匹配结果文件，填充时间片和路段聚类
 	cout << "读入所有地图匹配结果" << endl;
 	for (auto timeSlice : timeSlices)
 	{
@@ -83,7 +85,7 @@ bool couldExtendOrNot(set<int> &set1, set<int> &set2, int &intersectionCount){
 	set_union(set1.begin(), set1.end(), set2.begin(), set2.end(), inserter(unionResult, unionResult.begin()));
 	set<int> intersectionResult = set<int>();
 	set_intersection(set1.begin(), set1.end(), set2.begin(), set2.end(), inserter(intersectionResult, intersectionResult.begin()));
-	intersectionCount = intersectionResult.size();
+	intersectionCount = static_cast<int>(intersectionResult.size());
 	double similarity = (intersectionResult.size() + 0.0) / unionResult.size();
 	return similarity >= DE_MINSIMILARITY;
 }
@@ -272,7 +274,6 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo(){
 
 int main(){
 	//建立路网；读入地图匹配结果并构造路段聚类
-	routeNetwork = Map(filePath, 500);//建立路网
 	edgeCluster();//读入地图匹配结果并构造路段聚类
 
 	//挖掘路段序列
@@ -291,6 +292,6 @@ int main(){
 	getAverageSpeed();
 
 	//输出路段序列
-	//outputResults("filteredResults.txt");
+	outputResults("filteredResults.txt");
 	return 0;
 }
