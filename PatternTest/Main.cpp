@@ -9,7 +9,7 @@
 #include "Evaluation.h"
 using namespace std;
 
-string filePath = "D:\\MapMatchingProject\\Data\\新加坡数据\\";
+string filePath = "E:\\MapMatchingProject\\Data\\新加坡数据\\";
 string inputDirectory = "9daysForTrajPattern\\input";
 string answerDirectory = "9daysForTrajPattern\\answer";
 Map routeNetwork(filePath, 500);
@@ -285,13 +285,19 @@ int main(){
 
 	//评估路段序列
 	cout << "共得到" << resultsList.size() << "个模式序列" << endl;
-	getDistinctEdges();
+	//getDistinctEdges();
 	filterInvalidEdgeSet();
 	//getDistinctEdges();
-	getTimeStatistic();
-	getAverageSpeed();
+	statisticDistinctEdges();
+
+	//getTimeStatistic();
+	//getAverageSpeed();
 
 	//输出路段序列
-	outputResults("filteredResults.txt");
+	//outputResults("filteredResults.txt");
+	//统计路段出现的频数并保存至集合distinctEdges
+	//输出集合distinctEdges至Json文件
+	OutputDistinctEdgesToJson(statisticDistinctEdges());
+	system("pause");
 	return 0;
 }
