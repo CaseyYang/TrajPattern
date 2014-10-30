@@ -171,7 +171,7 @@ map<Edge*, int> statisticDistinctEdges(){
 void OutputDistinctEdgesToJson(map<Edge*, int> &distinctEdges){
 	ofstream fout("distinctEdges.js");
 	fout.precision(11);
-	fout << "data = " << endl;
+	fout << "distinctEdges = " << endl;
 	fout << "{\"city\":\"Singapore\"," << endl;
 	fout << "\"edges\":[";
 	int edgeIndex = 0;
