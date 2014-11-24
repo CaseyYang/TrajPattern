@@ -150,6 +150,54 @@ void getDistinctEdges(){
 	fout.close();
 }
 
+//统计结果路段数量和出现频数
+map<Edge*, int> statisticDistinctEdges(){
+	map<Edge*, int> edgeCounts = map<Edge*, int>();
+	for (auto result : resultsList){
+		for (auto resultEdge : result){
+			if (edgeCounts[resultEdge->clusterCoreEdge] == 0){
+				edgeCounts[resultEdge->clusterCoreEdge] = 1;
+			}
+			else{
+				++edgeCounts[resultEdge->clusterCoreEdge];
+			}
+		}
+	}
+	cout << "共有" << edgeCounts.size() << "条不相同的边" << endl;
+	return edgeCounts;
+}
+
+//输出序列路段和出现频数至Json文件
+void OutputDistinctEdgesToJson(map<Edge*, int> &distinctEdges){
+	ofstream fout("distinctEdges.js");
+	fout.precision(11);
+	fout << "distinctEdges = " << endl;
+	fout << "{\"city\":\"Singapore\"," << endl;
+	fout << "\"edges\":[";
+	int edgeIndex = 0;
+	for each(pair<Edge*,int> edgeCountPair in distinctEdges){
+		if (edgeCountPair.first != NULL){
+			Edge* edge = edgeCountPair.first;
+			if (edgeIndex > 0){
+				fout << "," << endl;
+			}
+			fout << "{\"edgeId\":" << edge->id << ",\"numOfFigures\":" << edge->figure->size() << ",\"rate\":"<<edgeCountPair.second<<",\"figures\":[";
+			size_t figureIndex = 0;
+			for each (GeoPoint* figPoint in *(edge->figure)){
+				fout << "{\"x\":" << figPoint->lon << ",\"y\":" << figPoint->lat << "}";
+				if (figureIndex < edge->figure->size() - 1){
+					fout << ",";
+				}
+				figureIndex++;
+			}
+			fout << "]}";
+		}
+		edgeIndex++;
+	}
+	fout << "]}" << endl;
+	fout.close();
+}
+
 //统计结果时间分布
 void getTimeStatistic(){
 	map<int, int> timeStatistic = map<int, int>();

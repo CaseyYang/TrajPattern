@@ -30,6 +30,12 @@ void getAverageSpeed();
 //统计结果路段数量
 void getDistinctEdges();
 
+//统计结果路段数量和出现频数
+map<Edge*, int> statisticDistinctEdges();
+
+//输出序列路段和出现频数至Json文件
+void OutputDistinctEdgesToJson(map<Edge*, int> &distinctEdges);
+
 //统计结果时间分布
 void getTimeStatistic();
 
