@@ -25,7 +25,7 @@ struct NODE_DIJKSTRA {
 	int t; //对应的路段终点id
 	double dist; //离起始点的最小距离
 
-	NODE_DIJKSTRA(int i, double dist){
+	NODE_DIJKSTRA(int i, double dist) {
 		this->t = i;
 		this->dist = dist;
 	}
