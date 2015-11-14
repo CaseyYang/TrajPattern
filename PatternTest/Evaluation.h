@@ -5,7 +5,7 @@
 
 extern list<list<EdgeCluster*>> resultsList;
 
-struct SubTraj{
+struct SubTraj {
 	Edge* endEdge;//子轨迹当前最后一个路段指针
 	double dist;//子轨迹持续长度（单位为米）
 	int startTime;//子轨迹开始时间（单位为分钟）

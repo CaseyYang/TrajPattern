@@ -43,10 +43,10 @@ void Map::open(string folderDir, int gridWidth)
 		int nodeId;
 		GeoPoint* pt;
 		nodeIfs >> nodeId >> lat >> lon;
-		if (nodeIfs.fail()){
+		if (nodeIfs.fail()) {
 			break;
 		}
-		if (inArea(lat, lon)){
+		if (inArea(lat, lon)) {
 			pt = new GeoPoint(lat, lon);
 		}
 		else
@@ -174,10 +174,10 @@ void Map::open(string folderDir, int gridWidth)
 	//初始化邻接表
 	count = 0;
 	int edgesCount = 0;
-	for (size_t i = 0; i < edges.size(); i++)
+	for (size_t i = 0; i < edges.size(); ++i)
 	{
 		AdjNode* head = new AdjNode();
-		head->endPointId = i;
+		head->endPointId = static_cast<int>(i);
 		head->next = NULL;
 		adjList.push_back(head);
 	}
@@ -228,9 +228,9 @@ vector<Edge*> Map::getNearEdges(double lat, double lon, double threshold) const
 	if (row2 >= gridHeight) row2 = gridHeight - 1;
 	if (col1 < 0) col1 = 0;
 	if (col2 >= gridWidth) col2 = gridWidth - 1;
-	for (int row = row1; row <= row2; row++)
+	for (int row = row1; row <= row2; ++row)
 	{
-		for (int col = col1; col <= col2; col++)
+		for (int col = col1; col <= col2; ++col)
 		{
 			for (list<Edge*>::iterator iter = grid[row][col]->begin(); iter != grid[row][col]->end(); iter++)
 			{
@@ -246,11 +246,11 @@ vector<Edge*> Map::getNearEdges(double lat, double lon, double threshold) const
 			}
 		}
 	}
-	for (size_t i = 0; i < result.size(); i++)
+	for (size_t i = 0; i < result.size(); ++i)
 	{
 		result[i]->visited = false;
 	}
-	for (size_t i = 0; i < fail.size(); i++)
+	for (size_t i = 0; i < fail.size(); ++i)
 	{
 		fail[i]->visited = false;
 	}
@@ -326,26 +326,26 @@ Edge* Map::getNearestEdge(double lat, double lon, double &shortestDist) {
 	bool noNearerEdge = false;
 	Edge* currentResultEdge = NULL;
 	double currentShortestDist = INF;
-	while ((!foundNearsetEdge || !noNearerEdge) && range <= max(gridHeight, gridWidth)){
-		for (int row = rowPt - range; row <= rowPt + range; row++){
-			if (row >= 0 && row < gridHeight){
-				if (row == rowPt - range || row == rowPt + range){
-					for (int col = colPt - range; col <= colPt + range; col++){
-						if (col >= 0 && col < gridWidth){
+	while ((!foundNearsetEdge || !noNearerEdge) && range <= max(gridHeight, gridWidth)) {
+		for (int row = rowPt - range; row <= rowPt + range; row++) {
+			if (row >= 0 && row < gridHeight) {
+				if (row == rowPt - range || row == rowPt + range) {
+					for (int col = colPt - range; col <= colPt + range; col++) {
+						if (col >= 0 && col < gridWidth) {
 							getNearestEdgeInAGridCell(lat, lon, row, col, currentResultEdge, currentShortestDist);
 						}
-						else{
+						else {
 							continue;
 						}
 					}
 				}
-				else{
+				else {
 					int col = colPt - range;
-					if (col >= 0 && col < gridWidth){
+					if (col >= 0 && col < gridWidth) {
 						getNearestEdgeInAGridCell(lat, lon, row, col, currentResultEdge, currentShortestDist);
 					}
 					col = colPt + range;
-					if (col >= 0 && col < gridWidth){
+					if (col >= 0 && col < gridWidth) {
 						getNearestEdgeInAGridCell(lat, lon, row, col, currentResultEdge, currentShortestDist);
 					}
 				}
@@ -355,7 +355,7 @@ Edge* Map::getNearestEdge(double lat, double lon, double &shortestDist) {
 				continue;
 			}
 		}
-		if (currentResultEdge != NULL){
+		if (currentResultEdge != NULL) {
 			foundNearsetEdge = true;
 			shortestDist = currentShortestDist;
 			maxSearchRange = int(shortestDist / (gridSizeDeg * GeoPoint::geoScale)) + 1;
@@ -370,7 +370,7 @@ Edge* Map::getNearestEdge(double lat, double lon, double &shortestDist) {
 }
 
 //找出距离(lat, lon)点最近的k条路段
-vector<Edge*> Map::getKNearEdges(double lat, double lon, size_t k){
+vector<Edge*> Map::getKNearEdges(double lat, double lon, size_t k) {
 	const int rowPt = getRowId(lat);
 	const int colPt = getColId(lon);
 	int range = 0;
@@ -379,27 +379,27 @@ vector<Edge*> Map::getKNearEdges(double lat, double lon, size_t k){
 	set<int> visitedEdgeIdSet = set<int>();
 	bool foundKEdges = false;
 	bool noNearerEdge = false;
-	while ((!foundKEdges || !noNearerEdge) && range <= max(gridHeight, gridWidth)){
+	while ((!foundKEdges || !noNearerEdge) && range <= max(gridHeight, gridWidth)) {
 		bool hasEdgeAdded = false;
-		for (int row = rowPt - range; row <= rowPt + range; row++){
-			if (row >= 0 && row < gridHeight){
-				if (row == rowPt - range || row == rowPt + range){
-					for (int col = colPt - range; col <= colPt + range; col++){
-						if (col >= 0 && col < gridWidth){
+		for (int row = rowPt - range; row <= rowPt + range; row++) {
+			if (row >= 0 && row < gridHeight) {
+				if (row == rowPt - range || row == rowPt + range) {
+					for (int col = colPt - range; col <= colPt + range; col++) {
+						if (col >= 0 && col < gridWidth) {
 							hasEdgeAdded = getEdgesInAGridCell(lat, lon, row, col, canadidateEdges, visitedEdgeIdSet) || hasEdgeAdded;
 						}
-						else{
+						else {
 							continue;
 						}
 					}
 				}
-				else{
+				else {
 					int col = colPt - range;
-					if (col >= 0 && col < gridWidth){
+					if (col >= 0 && col < gridWidth) {
 						hasEdgeAdded = getEdgesInAGridCell(lat, lon, row, col, canadidateEdges, visitedEdgeIdSet) || hasEdgeAdded;
 					}
 					col = colPt + range;
-					if (col >= 0 && col < gridWidth){
+					if (col >= 0 && col < gridWidth) {
 						hasEdgeAdded = getEdgesInAGridCell(lat, lon, row, col, canadidateEdges, visitedEdgeIdSet) || hasEdgeAdded;
 					}
 				}
@@ -409,9 +409,9 @@ vector<Edge*> Map::getKNearEdges(double lat, double lon, size_t k){
 				continue;
 			}
 		}
-		if (visitedEdgeIdSet.size() >= k&&hasEdgeAdded){
+		if (visitedEdgeIdSet.size() >= k&&hasEdgeAdded) {
 			foundKEdges = true;
-			sort(canadidateEdges.begin(), canadidateEdges.end(), [&](pair<Edge*, double> &e1, pair<Edge*, double> &e2){
+			sort(canadidateEdges.begin(), canadidateEdges.end(), [&](pair<Edge*, double> &e1, pair<Edge*, double> &e2) {
 				return e1.second < e2.second;
 			});
 			canadidateEdges.resize(k);
@@ -467,7 +467,7 @@ double Map::distM(double lat, double lon, Edge* edge) const
 			double C = (*iter)->lat * ((*nextIter)->lon - (*iter)->lon) - (*iter)->lon * ((*nextIter)->lat - (*iter)->lat);
 			double tmpDist = abs(A * pt->lon + B * pt->lat + C) / sqrt(A * A + B * B);
 			tmpDist *= GeoPoint::geoScale;
-			if (minDist > tmpDist){
+			if (minDist > tmpDist) {
 				minDist = tmpDist;
 			}
 		}
@@ -547,16 +547,16 @@ double Map::distM(double lat, double lon, Edge* edge, double& prjDist) const
 }
 
 //移植SRC版本：返回(lat,lon)点到edge的距离，单位为米；同时记录投影点到edge起点的距离存入prjDist
-double Map::distMFromTransplantFromSRC(double lat, double lon, Edge* edge, double& prjDist){
+double Map::distMFromTransplantFromSRC(double lat, double lon, Edge* edge, double& prjDist) {
 	double tmpSideLen = 0;
 	double result = 1e80, tmp = 0;
 	double x = -1, y = -1;
-	for (Figure::iterator figIter = edge->figure->begin(); figIter != edge->figure->end(); figIter++){
-		if (x != -1 && y != -1){
+	for (Figure::iterator figIter = edge->figure->begin(); figIter != edge->figure->end(); figIter++) {
+		if (x != -1 && y != -1) {
 			double x2 = (*figIter)->lat;
 			double y2 = (*figIter)->lon;
 			double dist = GeoPoint::distM(x, y, lat, lon);//circleDistance(x, y, nodeX, nodeY);
-			if (dist<result){
+			if (dist < result) {
 				result = dist;
 				tmpSideLen = tmp;
 			}
@@ -566,11 +566,11 @@ double Map::distMFromTransplantFromSRC(double lat, double lon, Edge* edge, doubl
 			double vecY2 = lon - y;
 			double vecX3 = lat - x2;
 			double vecY3 = lon - y2;
-			if (vecX1*vecX2 + vecY1*vecY2>0 && -vecX1*vecX3 - vecY1*vecY3 > 0 && (vecX1 != 0 || vecY1 != 0)){
+			if (vecX1*vecX2 + vecY1*vecY2>0 && -vecX1*vecX3 - vecY1*vecY3 > 0 && (vecX1 != 0 || vecY1 != 0)) {
 				double rate = ((lat - x2)*vecX1 + (lon - y2)*vecY1) / (-vecX1*vecX1 - vecY1*vecY1);
 				double nearX = rate*x + (1 - rate)*x2, nearY = rate*y + (1 - rate)*y2;
 				double dist = GeoPoint::distM(nearX, nearY, lat, lon);
-				if (dist < result){
+				if (dist < result) {
 					result = dist;
 					tmpSideLen = tmp + GeoPoint::distM(x, y, nearX, nearY);
 				}
@@ -606,7 +606,7 @@ void Map::getNearPointsInSameTimeStamp(GeoPoint* point, double threshold, list<G
 		{
 			for (list<GeoPoint*>::iterator iter = pointGrid[row][col]->begin(); iter != pointGrid[row][col]->end(); iter++)
 			{
-				if (point->time == (*iter)->time && GeoPoint::distM(point->lat, point->lon, (*iter)->lat, (*iter)->lon) <= threshold){
+				if (point->time == (*iter)->time && GeoPoint::distM(point->lat, point->lon, (*iter)->lat, (*iter)->lon) <= threshold) {
 					dest.push_back(*iter);
 				}
 			}
@@ -632,14 +632,14 @@ int Map::hasEdge(int startNodeId, int endNodeId) const
 }
 
 //在索引中插入一个轨迹采样点，返回true表示插入成功；返回false表示采样点位置超过索引范围
-bool Map::insertPoint(GeoPoint* point){
+bool Map::insertPoint(GeoPoint* point) {
 	int row = getRowId(point->lat);
 	int col = getColId(point->lon);
-	if (row >= 0 && row < gridHeight&&col >= 0 && col < gridWidth){
+	if (row >= 0 && row < gridHeight&&col >= 0 && col < gridWidth) {
 		pointGrid[row][col]->push_back(point);
 		return true;
 	}
-	else{
+	else {
 		return false;
 	}
 }
@@ -655,10 +655,10 @@ int Map::insertNode(double lat, double lon)
 	GeoPoint* pt = new GeoPoint(lat, lon);
 	nodes.push_back(pt);
 	AdjNode* adjNode = new AdjNode();
-	adjNode->endPointId = adjList.size();
+	adjNode->endPointId = static_cast<int>(adjList.size());
 	adjNode->next = NULL;
 	adjList.push_back(adjNode);
-	return nodes.size() - 1;
+	return static_cast<int>(nodes.size()) - 1;
 }
 
 //在当前图中插入边
@@ -673,7 +673,7 @@ int Map::insertEdge(Figure* figure, int startNodeId, int endNodeId)
 	newEdge->startNodeId = startNodeId;
 	newEdge->endNodeId = endNodeId;
 	newEdge->lengthM = calEdgeLength(figure);
-	newEdge->id = edges.size();
+	newEdge->id = static_cast<int>(edges.size());
 	edges.push_back(newEdge);
 	AdjNode* current = adjList[startNodeId];
 	insertEdge(newEdge->id, startNodeId, endNodeId); //加入连通关系
@@ -845,11 +845,11 @@ dist2：基于隐马尔科夫模型地图匹配算法中轨迹点到A路段起点的距离，默认值为0
 deltaT：基于隐马尔科夫模型地图匹配算法中两轨迹点的时间差，默认为INF
 shortestPath：保存组成最短路径的路段的Edge*
 */
-double Map::shortestPathLength(int ID1, int ID2, list<Edge*> &shortestPath, double dist1, double dist2, double deltaT){
-	int maxNodeNum = nodes.size();
+double Map::shortestPathLength(int ID1, int ID2, list<Edge*> &shortestPath, double dist1, double dist2, double deltaT) {
+	int maxNodeNum = static_cast<int>(nodes.size());
 	vector<double> dist = vector<double>(maxNodeNum);
 	vector<bool> flag = vector<bool>(maxNodeNum);
-	for (int i = 0; i < maxNodeNum; i++) {
+	for (int i = 0; i < maxNodeNum; ++i) {
 		dist[i] = INF;
 		flag[i] = false;
 	}
@@ -863,7 +863,7 @@ double Map::shortestPathLength(int ID1, int ID2, list<Edge*> &shortestPath, doub
 		NODE_DIJKSTRA x = Q.top();
 		Q.pop();
 		int u = x.t;
-		if (x.dist > deltaT*MAXSPEED){
+		if (x.dist > deltaT*MAXSPEED) {
 			return INF;
 		}
 		if (flag[u]) {
@@ -883,7 +883,7 @@ double Map::shortestPathLength(int ID1, int ID2, list<Edge*> &shortestPath, doub
 		}
 	}
 	double resultLength = dist[ID2];
-	for (Edge* edge = preEdges[ID2]; edge != NULL; edge = preEdges[edge->startNodeId]){
+	for (Edge* edge = preEdges[ID2]; edge != NULL; edge = preEdges[edge->startNodeId]) {
 		shortestPath.push_front(edge);
 	}
 	return resultLength;
@@ -894,10 +894,10 @@ double Map::shortestPathLength(int ID1, int ID2, list<Edge*> &shortestPath, doub
 //////////////////////////////////////////////////////////////////////////
 
 //给定行号row和列号row，找出相应单元格中离(lat,lon)点最近的路段，保存在currentResultEdge中，shortestDist保存相应的最短距离
-void Map::getNearestEdgeInAGridCell(double lat, double lon, int row, int col, Edge*& currentResultEdge, double &shortestDist){
+void Map::getNearestEdgeInAGridCell(double lat, double lon, int row, int col, Edge*& currentResultEdge, double &shortestDist) {
 	for (list<Edge*>::iterator edgeIter = grid[row][col]->begin(); edgeIter != grid[row][col]->end(); edgeIter++)
 	{
-		if (distM(lat, lon, (*edgeIter)) < shortestDist){
+		if (distM(lat, lon, (*edgeIter)) < shortestDist) {
 			shortestDist = distM(lat, lon, (*edgeIter));
 			currentResultEdge = (*edgeIter);
 		}
@@ -905,11 +905,11 @@ void Map::getNearestEdgeInAGridCell(double lat, double lon, int row, int col, Ed
 }
 
 //给定行号row和列号row，返回相应单元格中所有路段保存在resultEdges中，另外把相应的EdgeId保存在visitedEdgeIdSet中；如果resultEdges集合有改变，则返回true，反之返回false
-bool Map::getEdgesInAGridCell(double lat, double lon, int row, int col, vector<pair<Edge*, double>> &resultEdges, set<int> &visitedEdgeIdSet){
+bool Map::getEdgesInAGridCell(double lat, double lon, int row, int col, vector<pair<Edge*, double>> &resultEdges, set<int> &visitedEdgeIdSet) {
 	bool result = false;
 	for (list<Edge*>::iterator edgeIter = grid[row][col]->begin(); edgeIter != grid[row][col]->end(); edgeIter++)
 	{
-		if (visitedEdgeIdSet.count((*edgeIter)->id) == 0){
+		if (visitedEdgeIdSet.count((*edgeIter)->id) == 0) {
 			double dist = this->distM(lat, lon, (*edgeIter));
 			resultEdges.push_back(make_pair((*edgeIter), dist));
 			visitedEdgeIdSet.insert((*edgeIter)->id);
@@ -971,10 +971,10 @@ double Map::distM_withThres(double lat, double lon, Edge* edge, double threshold
 			double C = (*iter)->lat * ((*nextIter)->lon - (*iter)->lon) - (*iter)->lon * ((*nextIter)->lat - (*iter)->lat);
 			double tmpDist = abs(A * pt->lon + B * pt->lat + C) / sqrt(A * A + B * B);
 			tmpDist *= GeoPoint::geoScale;
-			if (tmpDist < threshold){
+			if (tmpDist < threshold) {
 				return tmpDist;
 			}
-			if (minDist > tmpDist){
+			if (minDist > tmpDist) {
 				minDist = tmpDist;
 			}
 		}
@@ -1024,7 +1024,7 @@ void Map::createGridIndex()
 	gridSizeDeg = (maxLon - minLon) / double(gridWidth);
 	grid = new list<Edge*>* *[gridHeight];
 	pointGrid = new list<GeoPoint*>* *[gridHeight];//针对轨迹采样点的索引
-	for (int i = 0; i < gridHeight; i++){
+	for (int i = 0; i < gridHeight; i++) {
 		grid[i] = new list<Edge*>*[gridWidth];
 		pointGrid[i] = new list<GeoPoint*>*[gridWidth];//针对轨迹采样点的索引
 	}
@@ -1063,17 +1063,17 @@ void Map::createGridIndexForSegment(Edge *edge, GeoPoint* fromPT, GeoPoint* toPt
 	//////////////////////////////////////////////////////////////////////////
 	///对edge路中的fromPt->toPt段插入网格索引，经过的网格都加入其指针，如果与网格相交长度过小则不加入网格
 	//////////////////////////////////////////////////////////////////////////
-	if (edge == NULL){ return; }
+	if (edge == NULL) { return; }
 	GeoPoint* pt1 = fromPT;
 	GeoPoint* pt2 = toPt;
 	double x1 = pt1->lon - minLon;
 	double y1 = pt1->lat - minLat;
 	double x2 = pt2->lon - minLon;
 	double y2 = pt2->lat - minLat;
-	int row1 = y1 / gridSizeDeg;
-	int row2 = y2 / gridSizeDeg;
-	int col1 = x1 / gridSizeDeg;
-	int col2 = x2 / gridSizeDeg;
+	int row1 = static_cast<int>(y1 / gridSizeDeg);
+	int row2 = static_cast<int>(y2 / gridSizeDeg);
+	int col1 = static_cast<int>(x1 / gridSizeDeg);
+	int col2 = static_cast<int>(x2 / gridSizeDeg);
 	if (row1 >= gridHeight || row1 < 0 || col1 >= gridWidth || col1 < 0 ||
 		row2 >= gridHeight || row2 < 0 || col2 >= gridWidth || col2 < 0)
 	{

@@ -7,7 +7,7 @@ using namespace std;
 #define DB_MINPTS 5//DBSCAN算法中指定的最少元素个数
 
 
-class Cluster{
+class Cluster {
 public:
 	set<GeoPoint*> clusterObjects;//聚类所包含的轨迹采样点集合
 	set<int> objectIds;//聚类包含的轨迹采样点所在的轨迹Id集合

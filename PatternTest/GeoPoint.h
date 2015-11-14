@@ -22,7 +22,7 @@ public:
 
 	GeoPoint(double lat, double lon, int time);
 	GeoPoint(double lat, double lon);
-	GeoPoint(int id, int objectId, double lat, double lon,int rawTime,int time);
+	GeoPoint(int id, int objectId, double lat, double lon, int rawTime, int time);
 
 	static double geoScale;
 	static double distM(double lat1, double lon1, double lat2, double lon2);

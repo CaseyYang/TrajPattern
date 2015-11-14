@@ -2,7 +2,7 @@
 #include"Cluster.h"
 #include"Map.h"
 
-class TimeSlice{
+class TimeSlice {
 public:
 	list<GeoPoint*> points;//时间片中所包含的轨迹采样点集合
 	list<Cluster*> clusters;//时间片中所包含的聚类集合
@@ -13,5 +13,5 @@ public:
 
 private:
 	void dbscan(Map& routeNetwork);
-	void expandCluster(Map& routeNetwork,GeoPoint* p, list<GeoPoint*> &neighbor, Cluster* cluster);
+	void expandCluster(Map& routeNetwork, GeoPoint* p, list<GeoPoint*> &neighbor, Cluster* cluster);
 };
