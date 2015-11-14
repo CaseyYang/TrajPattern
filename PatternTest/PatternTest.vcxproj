@@ -139,22 +139,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\MapLibraries\GeoPoint.h" />
+    <ClInclude Include="..\MapLibraries\Map.h" />
     <ClInclude Include="Cluster.h" />
     <ClInclude Include="Evaluation.h" />
     <ClInclude Include="Parameters.h" />
     <ClInclude Include="EdgeCluster.h" />
-    <ClInclude Include="GeoPoint.h" />
-    <ClInclude Include="Map.h" />
     <ClInclude Include="NewTimeSlice.h" />
     <ClInclude Include="ReadInTrajs.h" />
     <ClInclude Include="TimeSlice.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\MapLibraries\GeoPoint.cpp" />
+    <ClCompile Include="..\MapLibraries\Map.cpp" />
     <ClCompile Include="Cluster.cpp" />
     <ClCompile Include="EdgeCluster.cpp" />
     <ClCompile Include="Evaluation.cpp" />
-    <ClCompile Include="GeoPoint.cpp" />
-    <ClCompile Include="Map.cpp" />
     <ClCompile Include="NewTimeSlice.cpp" />
     <ClCompile Include="ReadInTrajs.cpp" />
     <ClCompile Include="TimeSlice.cpp" />

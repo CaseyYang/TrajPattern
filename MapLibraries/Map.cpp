@@ -56,7 +56,7 @@ void Map::open(string folderDir, int gridWidth)
 		}
 		nodes.push_back(pt);
 	}
-	printf("nodes count = %d\n", nodes.size());
+	printf("nodes count = %d\n", static_cast<int>(nodes.size()));
 	printf("nodes not in area count = %d\n", count);
 	nodeIfs.close();
 
@@ -163,7 +163,7 @@ void Map::open(string folderDir, int gridWidth)
 		edge->lengthM = calEdgeLength(figure);
 		edges.push_back(edge);
 	}
-	printf("edges count = %d\n", edges.size());
+	printf("edges count = %d\n", static_cast<int>(edges.size()));
 	printf("not in area edges count = %d\n", count);
 	geometryIfs.close();
 

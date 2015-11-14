@@ -3,7 +3,7 @@
 #include <io.h>
 #include "TimeSlice.h"
 #include "NewTimeSlice.h"
-#include "Map.h"
+#include "../MapLibraries/Map.h"
 
 //读入给定路径的轨迹文件中的一条轨迹，把每个轨迹采样点插入对应的时间片中
 extern void readOneTrajectory(string &filePath);

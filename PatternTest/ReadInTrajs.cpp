@@ -70,7 +70,7 @@ void scanTrajFolder(string folderDir, string inputDirectory, vector<TimeSlice*> 
 	string completeInputFilesPath = folderDir + inputDirectory + "\\" + "*.txt";
 	const char* dir = completeInputFilesPath.c_str();
 	_finddata_t fileInfo;//文件信息
-	long lf;//文件句柄
+	intptr_t lf;//文件句柄
 	if ((lf = _findfirst(dir, &fileInfo)) == -1l) {
 		cout << "文件夹" << completeInputFilesPath << "下未找到指定文件！" << endl;
 		return;
@@ -93,7 +93,7 @@ void scanMapMatchingResultFolder(string folderDir, string inputDirectory, vector
 	string completeInputFilesPath = folderDir + inputDirectory + "\\" + "*.txt";
 	const char* dir = completeInputFilesPath.c_str();
 	_finddata_t fileInfo;//文件信息
-	long lf;//文件句柄
+	intptr_t lf;//文件句柄
 	if ((lf = _findfirst(dir, &fileInfo)) == -1l) {
 		return;
 	}
