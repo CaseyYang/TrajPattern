@@ -12,18 +12,18 @@ set<int> invalidEdgeSet = set<int>();
 
 
 //序列结果
-struct DensityEdges{
+struct DensityEdges {
 	int startTime;
 	int endTime;
 	int resultId;
 	list<Edge*> resultEdges;
-	DensityEdges(int start, int end, int resultId){
+	DensityEdges(int start, int end, int resultId) {
 		this->startTime = start;
 		this->endTime = end;
 		resultEdges = list<Edge*>();
 		this->resultId = resultId;
 	}
-	void add(Edge* edge){
+	void add(Edge* edge) {
 		resultEdges.push_back(edge);
 	}
 };
@@ -34,12 +34,12 @@ set<Edge*> distinctEdges = set<Edge*>();//序列结果路段集合
 list<GeoPoint*> resultPoints = list<GeoPoint*>();//序列点集
 
 //读入序列结果文件
-void readInResult(string resultFilePath, int resultId){
+void readInResult(string resultFilePath, int resultId) {
 	ifstream fin(resultFilePath);
 	int totalCount = 0;
 	fin >> totalCount;
 	int index = 0, validIndex = 0;
-	while (index < totalCount){
+	while (index < totalCount) {
 		int count = 0, startTime = -1, endTime = -1;
 		char useless;
 		fin >> count >> useless >> startTime >> useless >> endTime;
@@ -47,17 +47,17 @@ void readInResult(string resultFilePath, int resultId){
 		int edgeIndex;
 		int index2 = 0;
 		bool valid = true;
-		while (index2 < count){
+		while (index2 < count) {
 			fin >> edgeIndex >> useless;
-			if (valid&&invalidEdgeSet.find(edgeIndex) == invalidEdgeSet.end()){
+			if (valid&&invalidEdgeSet.find(edgeIndex) == invalidEdgeSet.end()) {
 				result->add(routeNetwork.edges.at(edgeIndex));
 			}
-			else{
+			else {
 				valid = false;
 			}
 			index2++;
 		}
-		if (valid){
+		if (valid) {
 			resultLists.push_back(result);
 			validIndex++;
 		}
@@ -72,28 +72,28 @@ void readInResult(string resultFilePath, int resultId){
 }
 
 //统计结果时间分布
-void getTimeStatistic(){
+void getTimeStatistic() {
 	map<int, int> timeStatistic = map<int, int>();
-	for (int i = 0; i < 24; i++){
+	for (int i = 0; i < 24; i++) {
 		timeStatistic.insert(make_pair(i, 0));
 	}
 	ofstream fout("timeStatistic.txt");
-	for (auto result : resultLists){
-		for (int time = result->startTime / 60; time <= result->endTime / 60; time++){
+	for (auto result : resultLists) {
+		for (int time = result->startTime / 60; time <= result->endTime / 60; time++) {
 			timeStatistic.at(time)++;
 		}
 	}
-	for (auto pair : timeStatistic){
+	for (auto pair : timeStatistic) {
 		fout << pair.first << "\t" << pair.second << endl;
 	}
 	fout.close();
 }
 
 //统计结果路段数量
-void getDistinctEdges(){
-	for (auto result : resultLists){
-		for (auto resultEdge : result->resultEdges){
-			if (distinctEdges.find(resultEdge) == distinctEdges.end()){
+void getDistinctEdges() {
+	for (auto result : resultLists) {
+		for (auto resultEdge : result->resultEdges) {
+			if (distinctEdges.find(resultEdge) == distinctEdges.end()) {
 				distinctEdges.insert(resultEdge);
 			}
 		}
@@ -102,35 +102,35 @@ void getDistinctEdges(){
 }
 
 //统计结果路段的平均车速
-void getAverageSpeed(){
+void getAverageSpeed() {
 	map<int, double> speedStatistic = map<int, double>();
 	vector<int> speedCount = vector<int>();
-	for (int i = 0; i < 24; i++){
+	for (int i = 0; i < 24; i++) {
 		speedStatistic.insert(make_pair(i, 0));
 		speedCount.push_back(0);
 	}
-	for (auto result : resultLists){
+	for (auto result : resultLists) {
 		double dist = 0;
 		Edge* lastResultEdge = NULL;
-		for (auto resultEdge : result->resultEdges){
-			if (resultEdge != lastResultEdge){
+		for (auto resultEdge : result->resultEdges) {
+			if (resultEdge != lastResultEdge) {
 				dist += resultEdge->lengthM;
 			}
 			lastResultEdge = resultEdge;
 		}
 		double averageSpeed = (dist / ((result->endTime - result->startTime) * 60))*3.6;
-		for (int time = result->startTime / 60; time <= result->endTime / 60; time++){
+		for (int time = result->startTime / 60; time <= result->endTime / 60; time++) {
 			speedStatistic.at(time) += averageSpeed;
 			speedCount.at(time)++;
 		}
 	}
 	ofstream fout("speedStatistic.txt");
 	fout.precision(8);
-	for (auto pair : speedStatistic){
-		if (speedCount.at(pair.first) > 0){
+	for (auto pair : speedStatistic) {
+		if (speedCount.at(pair.first) > 0) {
 			fout << pair.first << "\t" << pair.second / speedCount.at(pair.first) << "\t" << speedCount.at(pair.first) << endl;
 		}
-		else{
+		else {
 			fout << pair.first << "\t0\t0" << endl;
 		}
 	}
@@ -138,23 +138,23 @@ void getAverageSpeed(){
 }
 
 //把序列结果路段转为json文件
-void distinctEdgesToJson(){
+void distinctEdgesToJson() {
 	ofstream fout("Edges.js");
 	fout.precision(11);
 	fout << "data = " << endl;
 	fout << "{\"city\":\"Singapore\"," << endl;
 	fout << "\"edges\":[";
 	int edgeIndex = 0;
-	for each(Edge* edge in distinctEdges){
-		if (edge != NULL){
-			if (edgeIndex > 0){
+	for each(Edge* edge in distinctEdges) {
+		if (edge != NULL) {
+			if (edgeIndex > 0) {
 				fout << "," << endl;
 			}
 			fout << "{\"edgeId\":" << edge->id << ",\"numOfFigures\":" << edge->figure->size() << ",\"figures\":[";
 			size_t figureIndex = 0;
-			for each (GeoPoint* figPoint in *(edge->figure)){
+			for each (GeoPoint* figPoint in *(edge->figure)) {
 				fout << "{\"x\":" << figPoint->lon << ",\"y\":" << figPoint->lat << "}";
-				if (figureIndex < edge->figure->size() - 1){
+				if (figureIndex < edge->figure->size() - 1) {
 					fout << ",";
 				}
 				figureIndex++;
@@ -169,7 +169,7 @@ void distinctEdgesToJson(){
 	for each (GeoPoint* trajPoint in resultPoints)
 	{
 		fout << "{\"x\":" << trajPoint->lon << ",\"y\":" << trajPoint->lat << "}";
-		if (trajPointIndex < resultPoints.size() - 1){
+		if (trajPointIndex < resultPoints.size() - 1) {
 			fout << ",";
 		}
 		trajPointIndex++;
@@ -179,20 +179,20 @@ void distinctEdgesToJson(){
 }
 
 //把序列结果采样点转为json文件
-void pointsToJson(){
+void pointsToJson() {
 	ofstream fout("Points.js");
 	fout.precision(11);
 	fout << "data = " << endl;
 	fout << "{\"city\":\"Singapore\"," << endl;
-	if (resultPoints.size() > 0){
+	if (resultPoints.size() > 0) {
 
 	}
 	fout.close();
 }
 
-int main(){
+int main() {
 	routeNetwork = Map(filePath, 500);
-	for (auto invalidEdge : invalidEdges){
+	for (auto invalidEdge : invalidEdges) {
 		invalidEdgeSet.insert(invalidEdge);
 	}
 	readInResult("result_day1_withtime.txt", 1);
