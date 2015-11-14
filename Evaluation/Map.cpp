@@ -174,10 +174,10 @@ void Map::open(string folderDir, int gridWidth)
 	//初始化邻接表
 	count = 0;
 	int edgesCount = 0;
-	for (size_t i = 0; i < edges.size(); i++)
+	for (size_t i = 0; i < edges.size(); ++i)
 	{
 		AdjNode* head = new AdjNode();
-		head->endPointId = i;
+		head->endPointId = static_cast<int>(i);
 		head->next = NULL;
 		adjList.push_back(head);
 	}
@@ -228,9 +228,9 @@ vector<Edge*> Map::getNearEdges(double lat, double lon, double threshold) const
 	if (row2 >= gridHeight) row2 = gridHeight - 1;
 	if (col1 < 0) col1 = 0;
 	if (col2 >= gridWidth) col2 = gridWidth - 1;
-	for (int row = row1; row <= row2; row++)
+	for (int row = row1; row <= row2; ++row)
 	{
-		for (int col = col1; col <= col2; col++)
+		for (int col = col1; col <= col2; ++col)
 		{
 			for (list<Edge*>::iterator iter = grid[row][col]->begin(); iter != grid[row][col]->end(); iter++)
 			{
@@ -246,11 +246,11 @@ vector<Edge*> Map::getNearEdges(double lat, double lon, double threshold) const
 			}
 		}
 	}
-	for (size_t i = 0; i < result.size(); i++)
+	for (size_t i = 0; i < result.size(); ++i)
 	{
 		result[i]->visited = false;
 	}
-	for (size_t i = 0; i < fail.size(); i++)
+	for (size_t i = 0; i < fail.size(); ++i)
 	{
 		fail[i]->visited = false;
 	}
@@ -655,10 +655,10 @@ int Map::insertNode(double lat, double lon)
 	GeoPoint* pt = new GeoPoint(lat, lon);
 	nodes.push_back(pt);
 	AdjNode* adjNode = new AdjNode();
-	adjNode->endPointId = adjList.size();
+	adjNode->endPointId = static_cast<int>(adjList.size());
 	adjNode->next = NULL;
 	adjList.push_back(adjNode);
-	return nodes.size() - 1;
+	return static_cast<int>(nodes.size()) - 1;
 }
 
 //在当前图中插入边
@@ -673,7 +673,7 @@ int Map::insertEdge(Figure* figure, int startNodeId, int endNodeId)
 	newEdge->startNodeId = startNodeId;
 	newEdge->endNodeId = endNodeId;
 	newEdge->lengthM = calEdgeLength(figure);
-	newEdge->id = edges.size();
+	newEdge->id = static_cast<int>(edges.size());
 	edges.push_back(newEdge);
 	AdjNode* current = adjList[startNodeId];
 	insertEdge(newEdge->id, startNodeId, endNodeId); //加入连通关系
@@ -846,10 +846,10 @@ deltaT：基于隐马尔科夫模型地图匹配算法中两轨迹点的时间差，默认为INF
 shortestPath：保存组成最短路径的路段的Edge*
 */
 double Map::shortestPathLength(int ID1, int ID2, list<Edge*> &shortestPath, double dist1, double dist2, double deltaT) {
-	int maxNodeNum = nodes.size();
+	int maxNodeNum = static_cast<int>(nodes.size());
 	vector<double> dist = vector<double>(maxNodeNum);
 	vector<bool> flag = vector<bool>(maxNodeNum);
-	for (int i = 0; i < maxNodeNum; i++) {
+	for (int i = 0; i < maxNodeNum; ++i) {
 		dist[i] = INF;
 		flag[i] = false;
 	}
@@ -1070,10 +1070,10 @@ void Map::createGridIndexForSegment(Edge *edge, GeoPoint* fromPT, GeoPoint* toPt
 	double y1 = pt1->lat - minLat;
 	double x2 = pt2->lon - minLon;
 	double y2 = pt2->lat - minLat;
-	int row1 = y1 / gridSizeDeg;
-	int row2 = y2 / gridSizeDeg;
-	int col1 = x1 / gridSizeDeg;
-	int col2 = x2 / gridSizeDeg;
+	int row1 = static_cast<int>(y1 / gridSizeDeg);
+	int row2 = static_cast<int>(y2 / gridSizeDeg);
+	int col1 = static_cast<int>(x1 / gridSizeDeg);
+	int col2 = static_cast<int>(x2 / gridSizeDeg);
 	if (row1 >= gridHeight || row1 < 0 || col1 >= gridWidth || col1 < 0 ||
 		row2 >= gridHeight || row2 < 0 || col2 >= gridWidth || col2 < 0)
 	{

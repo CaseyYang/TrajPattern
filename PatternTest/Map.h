@@ -18,7 +18,7 @@ using namespace std;
 #define max(a,b)	(((a) > (b)) ? (a) : (b))
 typedef list<GeoPoint*> Figure; //代表一条路形，每个GeoPoint*代表路形点，首尾节点即路的两个端点
 typedef std::pair<double, double> simplePoint; //内部类型，勿改动
-
+typedef list<GeoPoint*> Traj;
 
 //最短路径长度所用数据结构
 struct NODE_DIJKSTRA {
