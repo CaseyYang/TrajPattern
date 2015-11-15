@@ -79,7 +79,6 @@ void Map::open(string folderDir, int gridWidth)
 		if (geometryIfs.fail())
 			break;
 		std::vector<std::string> substrs;
-		//split(strLine, "^", substrs);
 		/*singapore ver*/
 		/*split(strLine, '^', substrs);
 		int edgeId = atoi(substrs[0].c_str());
@@ -113,7 +112,6 @@ void Map::open(string folderDir, int gridWidth)
 		count++;
 		break;
 		}
-
 		}*/
 		/*washington ver*/
 		split(strLine, '^', substrs);
@@ -148,8 +146,8 @@ void Map::open(string folderDir, int gridWidth)
 				count++;
 				break;
 			}
-
 		}
+
 		if (continueFlag)
 		{
 			delete figure;

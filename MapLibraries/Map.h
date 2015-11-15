@@ -41,7 +41,8 @@ struct  Edge
 	int startNodeId; //路段起始点id
 	int endNodeId;  //路段终止点id
 	bool visited;  //辅助字段，外部调用勿改动
-	int id;
+	int id;  //路段id
+	vector<double> poiNums;  //路段附近POI类型统计
 };
 
 struct AdjNode //邻接表结点
