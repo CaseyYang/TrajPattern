@@ -43,6 +43,7 @@ struct  Edge
 	bool visited;  //辅助字段，外部调用勿改动
 	int id;  //路段id
 	vector<double> poiNums;  //路段附近POI类型统计
+	Edge();
 };
 
 struct AdjNode //邻接表结点

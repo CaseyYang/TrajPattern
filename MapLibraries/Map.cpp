@@ -79,41 +79,41 @@ void Map::open(string folderDir, int gridWidth)
 		if (geometryIfs.fail())
 			break;
 		std::vector<std::string> substrs;
-		/*singapore ver*/
-		/*split(strLine, '^', substrs);
-		int edgeId = atoi(substrs[0].c_str());
-		double startLat = atof(substrs[3].c_str());
-		double startLon = atof(substrs[4].c_str());
-		double endLat = atof(substrs[substrs.size() - 2].c_str());
-		double endLon = atof(substrs[substrs.size() - 1].c_str());
-		if (!inArea(startLat, startLon) || !inArea(endLat, endLon))
-		{
-		printf("start(%lf,%lf), end(%lf,%lf)\n", startLat, startLon, endLat, endLon);
-		system("pause");
-		edges.push_back(NULL);
-		count++;
-		continue;
-		}
-		Figure* figure = new Figure();
-		for (int i = 3; i < substrs.size() - 1; i += 2)
-		{
-		double lat, lon;
-		lat = atof(substrs[i].c_str());
-		lon = atof(substrs[i + 1].c_str());
-		if (inArea(lat, lon))
-		{
-		GeoPoint* pt = new GeoPoint(lat, lon);
-		figure->push_back(pt);
-		}
-		else
-		{
-		continueFlag = true;
-		edges.push_back(NULL);
-		count++;
-		break;
-		}
-		}*/
 		/*washington ver*/
+		//split(strLine, '^', substrs);
+		//int edgeId = atoi(substrs[0].c_str());
+		//double startLat = atof(substrs[3].c_str());
+		//double startLon = atof(substrs[4].c_str());
+		//double endLat = atof(substrs[substrs.size() - 2].c_str());
+		//double endLon = atof(substrs[substrs.size() - 1].c_str());
+		//if (!inArea(startLat, startLon) || !inArea(endLat, endLon))
+		//{
+		//	printf("start(%lf,%lf), end(%lf,%lf)\n", startLat, startLon, endLat, endLon);
+		//	system("pause");
+		//	edges.push_back(NULL);
+		//	count++;
+		//	continue;
+		//}
+		//Figure* figure = new Figure();
+		//for (int i = 3; i < substrs.size() - 1; i += 2)
+		//{
+		//	double lat, lon;
+		//	lat = atof(substrs[i].c_str());
+		//	lon = atof(substrs[i + 1].c_str());
+		//	if (inArea(lat, lon))
+		//	{
+		//		GeoPoint* pt = new GeoPoint(lat, lon);
+		//		figure->push_back(pt);
+		//	}
+		//	else
+		//	{
+		//		continueFlag = true;
+		//		edges.push_back(NULL);
+		//		count++;
+		//		break;
+		//	}
+		//}
+		/*singapore ver*/
 		split(strLine, '^', substrs);
 		int edgeId = atoi(substrs[0].c_str());
 		double startLat = atof(substrs[4].c_str());
@@ -1327,4 +1327,8 @@ bool smallerInDist(pair<Edge*, double>& c1, pair<Edge*, double>& c2)
 	///void getNearEdges(double lat, double lon, int k, vector<Edge*>& dest)函数中使用到的比较函数
 	//////////////////////////////////////////////////////////////////////////
 	return c1.second < c2.second;
+}
+
+Edge::Edge() :poiNums(vector<double>())
+{
 }
