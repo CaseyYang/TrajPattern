@@ -13,7 +13,7 @@ Map routeNetwork(rootDirectory + mapDirectory, 500);
 map<string, int> categories;
 
 
-void GenerateSemanticRouteNetwork() {
+void generateSemanticRouteNetwork() {
 	ifstream fin(rootDirectory + poiFilePath);
 	double lat, lon;
 	string category;
@@ -42,6 +42,32 @@ void GenerateSemanticRouteNetwork() {
 	fin.close();
 }
 
+void outputSemanticRouteNetwork(string filePath) {
+	ofstream fout(filePath);
+	bool first = true;
+	for each (pair<string, int> category in categories)
+	{
+		if (first) {
+			first = false;
+		}
+		else {
+			fout << ",";
+		}
+		fout << category.first;
+	}
+	fout << endl;
+	for each(Edge* edgePtr in routeNetwork.edges) {
+		if (edgePtr == NULL) continue;
+		fout << edgePtr->id;
+		for each(double num in edgePtr->poiNums) {
+			fout << "," << num;
+		}
+		fout << endl;
+	}
+	fout.close();
+}
+
 void main() {
-	GenerateSemanticRouteNetwork();
+	generateSemanticRouteNetwork();
+	outputSemanticRouteNetwork(semanticRoadFilePath);
 }

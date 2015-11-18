@@ -34,7 +34,7 @@ struct NODE_DIJKSTRA {
 	}
 };
 
-struct  Edge
+struct Edge
 {
 	static map<string, int> poiCategories;//记录所有POI类型和在poiNums数组中的下标
 	Figure* figure;  //路形信息
