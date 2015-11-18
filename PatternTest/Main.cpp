@@ -9,10 +9,12 @@
 #include "Evaluation.h"
 using namespace std;
 
-string filePath = "E:\\MapMatchingProject\\Data\\新加坡数据\\";
-string inputDirectory = "9daysForTrajPattern\\input";
-string answerDirectory = "9daysForTrajPattern\\answer";
-Map routeNetwork(filePath, 500);
+string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";
+string mapDirectory = "新加坡轨迹数据\\";
+string semanticRoadFilePath = "NDBC扩展\\semanticRoad.txt";
+string trajInputDirectory = "9daysForTrajPattern\\input";
+string matchedEdgeDirectory = "9daysForTrajPattern\\answer";
+Map routeNetwork(rootDirectory+mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> resultsList;//结果
 
@@ -23,7 +25,7 @@ vector<TimeSlice*> clusterDemo() {
 	for (int timeStamp = 0; timeStamp < 1440; timeStamp++) {
 		timeSlices.at(timeStamp) = new TimeSlice(timeStamp);
 	}
-	scanTrajFolder(filePath, inputDirectory, timeSlices);//读入轨迹
+	scanTrajFolder(rootDirectory + mapDirectory, trajInputDirectory, timeSlices);//读入轨迹
 	cout << "读入所有轨迹" << endl;
 	int outIndexCount = 0;
 	for each (TimeSlice* timeSlice in timeSlices)//对轨迹采样点建立索引
@@ -47,21 +49,6 @@ vector<TimeSlice*> clusterDemo() {
 	return timeSlices;
 }
 
-//输出TimeSlice
-void outputTimeSlices(vector<TimeSlice*> &timeSlices) {
-	ofstream fout("DBScanResult_day5.txt");
-	for (auto timeSlice : timeSlices) {
-		fout << timeSlice->time << ":" << timeSlice->clusters.size() << endl;
-		for (auto cluster : timeSlice->clusters) {
-			for (auto object : cluster->objectIds) {
-				fout << object << " ";
-			}
-			fout << endl;
-		}
-	}
-	fout.close();
-}
-
 //实验准备工作：读取地图匹配结果，组成各时间片的路段聚类
 void edgeCluster() {
 	timeSlices = vector<NewTimeSlice*>(1440);//初始化时间片集合
@@ -69,7 +56,7 @@ void edgeCluster() {
 	for (int timeStamp = 0; timeStamp < 1440; timeStamp++) {
 		timeSlices.at(timeStamp) = new NewTimeSlice(timeStamp);
 	}
-	scanMapMatchingResultFolder(filePath, answerDirectory, timeSlices, routeNetwork);//读入地图匹配结果文件，填充时间片和路段聚类
+	scanMapMatchingResultFolder(rootDirectory + mapDirectory, matchedEdgeDirectory, timeSlices, routeNetwork);//读入地图匹配结果文件，填充时间片和路段聚类
 	cout << "读入所有地图匹配结果" << endl;
 	for (auto timeSlice : timeSlices)
 	{
@@ -272,32 +259,38 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 	return resultsList;
 }
 
-int main() {
-	//建立路网；读入地图匹配结果并构造路段聚类
-	edgeCluster();//读入地图匹配结果并构造路段聚类
+//int main() {
+//	//建立路网；读入地图匹配结果并构造路段聚类
+//	edgeCluster();//读入地图匹配结果并构造路段聚类
+//
+//	//挖掘路段序列
+//	clock_t start, finish;
+//	start = clock();
+//	resultsList = methodWithKPruningAndMoreInfo();
+//	finish = clock();
+//	cout << "用时：" << finish - start << "毫秒" << endl;
+//
+//	//评估路段序列
+//	cout << "共得到" << resultsList.size() << "个模式序列" << endl;
+//	//getDistinctEdges();
+//	filterInvalidEdgeSet();
+//	//getDistinctEdges();
+//	statisticDistinctEdges();
+//
+//	//getTimeStatistic();
+//	//getAverageSpeed();
+//
+//	//输出路段序列
+//	//outputResults("filteredResults.txt");
+//	//统计路段出现的频数并保存至集合distinctEdges
+//	//输出集合distinctEdges至Json文件
+//	OutputDistinctEdgesToJson(statisticDistinctEdges());
+//	system("pause");
+//	return 0;
+//}
 
-	//挖掘路段序列
-	clock_t start, finish;
-	start = clock();
-	resultsList = methodWithKPruningAndMoreInfo();
-	finish = clock();
-	cout << "用时：" << finish - start << "毫秒" << endl;
-
-	//评估路段序列
-	cout << "共得到" << resultsList.size() << "个模式序列" << endl;
-	//getDistinctEdges();
-	filterInvalidEdgeSet();
-	//getDistinctEdges();
-	statisticDistinctEdges();
-
-	//getTimeStatistic();
-	//getAverageSpeed();
-
-	//输出路段序列
-	//outputResults("filteredResults.txt");
-	//统计路段出现的频数并保存至集合distinctEdges
-	//输出集合distinctEdges至Json文件
-	OutputDistinctEdgesToJson(statisticDistinctEdges());
-	system("pause");
-	return 0;
+void main() {
+	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
+	outputSemanticRouteNetwork(routeNetwork, "semanticResult.txt");
 }
+

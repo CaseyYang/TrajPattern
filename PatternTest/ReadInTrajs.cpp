@@ -108,3 +108,91 @@ void scanMapMatchingResultFolder(string folderDir, string inputDirectory, vector
 		return;
 	}
 }
+
+//读入路段附近POI统计文件，填充每个路段的poiNums数组
+void generateSemanticRoad(Map&routeNetwork, string filePath) {
+	ifstream fin(filePath);
+	string rawStr;
+	fin >> rawStr;
+	int index = 0;
+	int last = 0;
+	for (int i = 0; i < rawStr.size(); ++i) {
+		if (rawStr[i] == ',') {
+			string category = rawStr.substr(last, i - last);
+			Edge::poiCategories.insert(make_pair(category, index++));
+			last = i + 1;
+		}
+	}
+	string category = rawStr.substr(last, rawStr.size() - last);
+	Edge::poiCategories.insert(make_pair(category, index++));
+	vector<Edge*>::iterator edgeIter = routeNetwork.edges.begin();
+	while (fin >> rawStr) {
+		int last = 0;
+		int separatorNum = 0;
+		for (int i = 0; i < rawStr.size(); ++i) {
+			if (rawStr[i] == ',') {
+				++separatorNum;
+				string curStr = rawStr.substr(last, i - last);
+				int curNum = atoi(curStr.c_str());
+				last = i + 1;
+				if (separatorNum == 1) {
+					if ((*edgeIter)->id != curNum) {
+						cout << "The edge id cannot match the id from poi file! error!" << endl;
+						system("pause");
+					}
+				}
+				else {
+					if ((*edgeIter)->poiNums.size() == 0) (*edgeIter)->poiNums = vector<double>(Edge::poiCategories.size());
+					(*edgeIter)->poiNums[separatorNum - 2] = curNum;
+				}
+			}
+		}
+		if (separatorNum > 1) {
+			string curStr = rawStr.substr(last, rawStr.size() - last);
+			int curNum = atoi(curStr.c_str());
+			(*edgeIter)->poiNums[separatorNum - 2] = curNum;
+		}
+	}
+	fin.close();
+}
+
+//输出路段id和poiNum数组到指定文件
+void outputSemanticRouteNetwork(Map&routeNetwork,string filePath) {
+	ofstream fout(filePath);
+	bool first = true;
+	for each (pair<string,int> category in Edge::poiCategories)
+	{
+		if (first) {
+			first = false;
+		}
+		else {
+			fout << ",";
+		}
+		fout << category.first;
+	}
+	fout << endl;
+	for each(Edge* edgePtr in routeNetwork.edges) {
+		if (edgePtr == NULL) continue;
+		fout << edgePtr->id;
+		for each(double num in edgePtr->poiNums) {
+			fout << "," << num;
+		}
+		fout << endl;
+	}
+	fout.close();
+}
+
+//输出TimeSlice
+void outputTimeSlices(vector<TimeSlice*> &timeSlices) {
+	ofstream fout("DBScanResult_day5.txt");
+	for (auto timeSlice : timeSlices) {
+		fout << timeSlice->time << ":" << timeSlice->clusters.size() << endl;
+		for (auto cluster : timeSlice->clusters) {
+			for (auto object : cluster->objectIds) {
+				fout << object << " ";
+			}
+			fout << endl;
+		}
+	}
+	fout.close();
+}

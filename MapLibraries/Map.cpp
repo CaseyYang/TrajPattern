@@ -612,7 +612,6 @@ void Map::getNearPointsInSameTimeStamp(GeoPoint* point, double threshold, list<G
 	}
 }
 
-
 //判断startNodeId与endNodeId之间有无边,没有边返回-1，有边返回edgeId
 int Map::hasEdge(int startNodeId, int endNodeId) const
 {

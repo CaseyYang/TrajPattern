@@ -36,6 +36,7 @@ struct NODE_DIJKSTRA {
 
 struct  Edge
 {
+	static map<string, int> poiCategories;//记录所有POI类型和在poiNums数组中的下标
 	Figure* figure;  //路形信息
 	double lengthM;  //记录路段总长，单位为m
 	int startNodeId; //路段起始点id
