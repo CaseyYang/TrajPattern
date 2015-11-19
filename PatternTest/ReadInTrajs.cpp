@@ -136,7 +136,6 @@ void generateSemanticRoad(Map&routeNetwork, string filePath) {
 				int curNum = atoi(curStr.c_str());
 				last = i + 1;
 				if (separatorNum == 1) {
-					if (*edgeIter == NULL) break;
 					if ((*edgeIter)->id != curNum) {
 						cout << "The edge id cannot match the id from poi file! error!" << endl;
 						cout << (*edgeIter)->id << endl;
@@ -156,6 +155,7 @@ void generateSemanticRoad(Map&routeNetwork, string filePath) {
 			(*edgeIter)->poiNums[separatorNum - 2] = curNum;
 		}
 		++edgeIter;
+		while (*edgeIter == NULL) ++edgeIter;
 	}
 	fin.close();
 }

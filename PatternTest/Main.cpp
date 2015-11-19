@@ -7,6 +7,7 @@
 #include "NewTimeSlice.h"
 #include "Parameters.h"
 #include "Evaluation.h"
+#include "Semantics.h"
 using namespace std;
 
 string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";

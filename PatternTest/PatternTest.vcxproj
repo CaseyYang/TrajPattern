@@ -147,6 +147,7 @@
     <ClInclude Include="EdgeCluster.h" />
     <ClInclude Include="NewTimeSlice.h" />
     <ClInclude Include="ReadInTrajs.h" />
+    <ClInclude Include="Semantics.h" />
     <ClInclude Include="TimeSlice.h" />
   </ItemGroup>
   <ItemGroup>
