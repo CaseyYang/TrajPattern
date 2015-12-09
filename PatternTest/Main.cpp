@@ -7,7 +7,7 @@
 #include "NewTimeSlice.h"
 #include "Parameters.h"
 #include "Evaluation.h"
-#include "Semantics.h"
+//#include "Semantics.h"
 using namespace std;
 
 string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";
@@ -63,6 +63,22 @@ void edgeCluster() {
 	{
 		for (auto edgeCluster : timeSlice->clusters) {
 			edgeCluster.second->ascertainPriorCanadidates();
+		}
+	}
+}
+
+//实验准备工作，poiNums数组归一化
+void poiNumsNormalize(Map&routeNetwork) {
+	for each (Edge* edge in routeNetwork.edges)
+	{
+		if (edge == NULL) continue;
+		int count = 0;
+		for each(double num in edge->poiNums) {
+			count += static_cast<int>(num);
+		}
+		if (count == 0) continue;
+		for (int i = 0; i < edge->poiNums.size(); ++i) {
+			edge->poiNums[i] = edge->poiNums[i] / count;
 		}
 	}
 }
@@ -291,7 +307,11 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 //}
 
 void main() {
+	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
-	outputSemanticRouteNetwork(routeNetwork, "semanticResult.txt");
+	//poiNums数组归一化
+	poiNumsNormalize(routeNetwork);
+	//检查POI读入正确性使用 
+	outputSemanticRouteNetwork(routeNetwork, "semanticResultNormalized.txt");
 }
 
