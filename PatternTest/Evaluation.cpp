@@ -1,4 +1,6 @@
+#include<iterator>
 #include "Evaluation.h"
+using namespace std;
 
 int invalidEdges[] = { 55402, 27454, 27489, 55435 };
 set<int> invalidEdgeSet = set<int>();

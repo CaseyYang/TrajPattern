@@ -4,7 +4,7 @@
 #include <iterator>
 #include <algorithm>
 #include "TimeSlice.h"
-#include "Map.h"
+#include "../MapLibraries/Map.h"
 
 TimeSlice::TimeSlice(int time) :time(time) {
 	clusters = list<Cluster*>();

@@ -15,13 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Map.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ReadInTrajs.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="GeoPoint.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Cluster.h">
@@ -42,15 +36,18 @@
     <ClInclude Include="Evaluation.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\MapLibraries\GeoPoint.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MapLibraries\Map.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Semantics.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ReadInTrajs.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="GeoPoint.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Map.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Cluster.cpp">
@@ -69,6 +66,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MapLibraries\GeoPoint.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MapLibraries\Map.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
