@@ -44,7 +44,7 @@ struct Edge
 	bool visited;  //辅助字段，外部调用勿改动
 	int id;  //路段id
 	vector<double> poiNums;  //路段附近POI类型统计
-	int localSemanticType;  //路段所属种类
+	int localSemanticType=-1;  //路段所属种类
 	Edge();
 };
 

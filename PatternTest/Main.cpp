@@ -7,6 +7,7 @@
 #include "NewTimeSlice.h"
 #include "Parameters.h"
 #include "Evaluation.h"
+#include "json/json.h"
 //#include "Semantics.h"
 using namespace std;
 
@@ -18,6 +19,7 @@ string matchedEdgeDirectory = "9daysForTrajPattern\\answer";
 Map routeNetwork(rootDirectory+mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> resultsList;//结果
+double distanceThreshold = 500,semanticThreshold=0.7;
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
 vector<TimeSlice*> clusterDemo() {
@@ -276,6 +278,110 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 	return resultsList;
 }
 
+//检查距离相近及语意相似
+bool checkSimilarEdge(Edge* edge1, Edge* edge2, Map&routeNetwork)
+{
+	if (GeoPoint::distM(routeNetwork.nodes[edge1->startNodeId], routeNetwork.nodes[edge2->startNodeId]) > distanceThreshold)return false;
+	if (GeoPoint::distM(routeNetwork.nodes[edge1->startNodeId], routeNetwork.nodes[edge2->endNodeId]) > distanceThreshold)return false;
+	if (GeoPoint::distM(routeNetwork.nodes[edge1->endNodeId], routeNetwork.nodes[edge2->startNodeId]) > distanceThreshold)return false;
+	if (GeoPoint::distM(routeNetwork.nodes[edge1->endNodeId], routeNetwork.nodes[edge2->endNodeId]) > distanceThreshold)return false;
+	double t1 = 0, t2 = 0, t3 = 0;
+	for (int i = 0; i < min(edge1->poiNums.size(), edge2->poiNums.size()); i++)
+	{
+		t1 += edge1->poiNums[i] * edge2->poiNums[i];
+		t2 += edge1->poiNums[i] * edge1->poiNums[i];
+		t3 += edge2->poiNums[i] * edge2->poiNums[i];
+	}
+	if ((t1 / sqrt(t2) / sqrt(t3)+1)/2 < semanticThreshold)return false;
+	return true;
+}
+
+//扩展聚类
+void expandCluster(Edge* edge, int&edgeId, queue<Edge*>&q, int &count, Map&routeNetwork)
+{
+	if (routeNetwork.edges[edgeId] == NULL||edge==NULL)return;
+	if (routeNetwork.edges[edgeId]->localSemanticType == -1 && checkSimilarEdge(edge, routeNetwork.edges[edgeId], routeNetwork))
+	{
+		routeNetwork.edges[edgeId]->localSemanticType = count;
+		q.push(routeNetwork.edges[edgeId]);
+	}
+}
+
+//计算路段所属种类
+void getLocalSemanticType(Map&routeNetwork)
+{
+	queue<Edge*>q;
+	int count = 0;
+	for each (Edge* edge in routeNetwork.edges)
+		if (edge != NULL&&edge->localSemanticType==-1)
+	{
+		q.push(edge); count++;
+		while (!q.empty())
+		{
+			Edge* edge = q.front(); q.pop();
+			if (edge->localSemanticType != -1)continue;
+			edge->localSemanticType = count;
+			for (AdjNode* i = routeNetwork.adjList[edge->startNodeId]->next; i != NULL; i = i->next) {
+				expandCluster(edge, i->edgeId, q, count, routeNetwork);
+				for (AdjNode* j = routeNetwork.adjList[i->endPointId]->next; j != NULL; j = j->next)
+					expandCluster(edge, j->edgeId, q, count, routeNetwork);
+			}
+			for (AdjNode* i = routeNetwork.adjList[edge->endNodeId]->next; i != NULL; i = i->next) {
+				expandCluster(edge, i->edgeId, q, count, routeNetwork);
+				for (AdjNode* j = routeNetwork.adjList[i->endPointId]->next; j != NULL; j = j->next)
+					expandCluster(edge, j->edgeId, q, count, routeNetwork);
+			}
+		}
+	}
+	cout <<count  << endl;
+/*	for each (Edge* edge in routeNetwork.edges)
+	{
+		cout << edge->id << ' ' << edge->localSemanticType << endl;
+	}
+*/
+}
+
+
+void outputJson()
+{
+	//根节点
+	Json::Value root;
+
+	//根节点属性
+	root["city"] = Json::Value("Singapore");
+
+	
+	Json::StyledWriter sw;
+	for each (Edge* edge in routeNetwork.edges)
+		if (edge!=NULL)
+	{
+		Json::Value partner;
+		//子节点属性
+		partner["edgeId"] = Json::Value(edge->id);
+		partner["numOfFigures"] = Json::Value(edge->figure->size());
+		for each(auto f in *edge->figure)
+		{
+			Json::Value figure;
+		//	cout << f->lat << ' ' << f->lon << endl;
+			figure["x"] = Json::Value(f->lon);
+			figure["y"] = Json::Value(f->lat);
+			partner["figures"].append(Json::Value(figure));
+		}
+		partner["localSemanticType"] = Json::Value(edge->localSemanticType);
+	//	cout << sw.write(partner);
+		root["edges"].append(Json::Value(partner));
+	}
+	
+	
+	
+	//输出到文件
+	ofstream os;
+	os.open("RouteNetworkData.js");
+	os << "routeNetwork =" << endl;
+	os << sw.write(root);
+	os.close();
+}
+
 //int main() {
 //	//建立路网；读入地图匹配结果并构造路段聚类
 //	edgeCluster();//读入地图匹配结果并构造路段聚类
@@ -311,7 +417,13 @@ void main() {
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
 	//poiNums数组归一化
 	poiNumsNormalize(routeNetwork);
+	//计算路段所属种类
+	getLocalSemanticType(routeNetwork);
 	//检查POI读入正确性使用 
+	
+	outputJson();
+
+	system("pause");
 	outputSemanticRouteNetwork(routeNetwork, "semanticResultNormalized.txt");
 }
 
