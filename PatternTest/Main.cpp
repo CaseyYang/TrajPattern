@@ -19,7 +19,9 @@ string matchedEdgeDirectory = "9daysForTrajPattern\\answer";
 Map routeNetwork(rootDirectory+mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> resultsList;//结果
-double distanceThreshold = 500,semanticThreshold=0.7;
+double semanticThreshold=0.95;
+int MinPts = 60;
+ofstream os;
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
 vector<TimeSlice*> clusterDemo() {
@@ -75,7 +77,7 @@ void poiNumsNormalize(Map&routeNetwork) {
 	{
 		if (edge == NULL) continue;
 		int count = 0;
-		for each(double num in edge->poiNums) {
+		for each(double num in edge->poiNums) {			
 			count += static_cast<int>(num);
 		}
 		if (count == 0) continue;
@@ -278,13 +280,13 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 	return resultsList;
 }
 
+
+
 //检查距离相近及语意相似
 bool checkSimilarEdge(Edge* edge1, Edge* edge2, Map&routeNetwork)
 {
-	if (GeoPoint::distM(routeNetwork.nodes[edge1->startNodeId], routeNetwork.nodes[edge2->startNodeId]) > distanceThreshold)return false;
-	if (GeoPoint::distM(routeNetwork.nodes[edge1->startNodeId], routeNetwork.nodes[edge2->endNodeId]) > distanceThreshold)return false;
-	if (GeoPoint::distM(routeNetwork.nodes[edge1->endNodeId], routeNetwork.nodes[edge2->startNodeId]) > distanceThreshold)return false;
-	if (GeoPoint::distM(routeNetwork.nodes[edge1->endNodeId], routeNetwork.nodes[edge2->endNodeId]) > distanceThreshold)return false;
+	if (edge1->poiNums.size() == 0 && edge2->poiNums.size() == 0)return true;
+	if (edge1->poiNums.size()==0 || edge2->poiNums.size()==0)return false;
 	double t1 = 0, t2 = 0, t3 = 0;
 	for (int i = 0; i < min(edge1->poiNums.size(), edge2->poiNums.size()); i++)
 	{
@@ -292,51 +294,75 @@ bool checkSimilarEdge(Edge* edge1, Edge* edge2, Map&routeNetwork)
 		t2 += edge1->poiNums[i] * edge1->poiNums[i];
 		t3 += edge2->poiNums[i] * edge2->poiNums[i];
 	}
-	if ((t1 / sqrt(t2) / sqrt(t3)+1)/2 < semanticThreshold)return false;
+	if (t2 < 1e-16 && t3 < 1e-16)return true;
+	if (t2 < 1e-16 || t3 < 1e-16)return false;
+	if (t1 / sqrt(t2) / sqrt(t3) < semanticThreshold)return false;
 	return true;
 }
 
-//扩展聚类
-void expandCluster(Edge* edge, int&edgeId, queue<Edge*>&q, int &count, Map&routeNetwork)
+queue<Edge*>regionQuery(Edge* P)
 {
-	if (routeNetwork.edges[edgeId] == NULL||edge==NULL)return;
-	if (routeNetwork.edges[edgeId]->localSemanticType == -1 && checkSimilarEdge(edge, routeNetwork.edges[edgeId], routeNetwork))
+	queue<Edge*>NeighborPts;
+	while (!NeighborPts.empty())NeighborPts.pop();
+	for (auto edge : routeNetwork.edges)
+		if (edge != NULL && checkSimilarEdge(P, edge, routeNetwork))
+		{
+		NeighborPts.push(edge);
+		}
+	return NeighborPts;
+
+}
+
+//扩展聚类
+void expandCluster( queue<Edge*>&NeighborPts, int &count)
+{
+	while (!NeighborPts.empty())
 	{
-		routeNetwork.edges[edgeId]->localSemanticType = count;
-		q.push(routeNetwork.edges[edgeId]);
+		Edge*edge = NeighborPts.front(); NeighborPts.pop();
+		if (edge->globalSemanticType == -1)
+		{
+			edge->globalSemanticType = count;
+			queue<Edge*>_NeighborPts = regionQuery(edge);
+			if (_NeighborPts.size() >= MinPts)
+				while (!_NeighborPts.empty())
+				{
+				Edge*e = _NeighborPts.front(); _NeighborPts.pop();
+				if (e->globalSemanticType == -1)NeighborPts.push(e);
+				}
+		}
 	}
 }
 
 //计算路段所属种类
-void getLocalSemanticType(Map&routeNetwork)
+void getGlobalSemanticType(Map&routeNetwork)
 {
-	queue<Edge*>q;
 	int count = 0;
 	for each (Edge* edge in routeNetwork.edges)
-		if (edge != NULL&&edge->localSemanticType==-1)
+		if (edge != NULL&&edge->globalSemanticType==-1)
+			{
+				queue<Edge*>NeighborPts = regionQuery(edge);
+			//	cout << "NeighborPts.size()=" << NeighborPts.size() << endl;
+			//	system("pause");
+				if (NeighborPts.size() < MinPts)continue;
+				count++;
+				expandCluster(NeighborPts, count);
+			}
+
+//	os << endl << MinPts << endl;
+	os << "count=";
+	os <<  count << endl;
+	for (int i = -1; i <= count; i++)
 	{
-		q.push(edge); count++;
-		while (!q.empty())
-		{
-			Edge* edge = q.front(); q.pop();
-			if (edge->localSemanticType != -1)continue;
-			edge->localSemanticType = count;
-			for (AdjNode* i = routeNetwork.adjList[edge->startNodeId]->next; i != NULL; i = i->next) {
-				expandCluster(edge, i->edgeId, q, count, routeNetwork);
-				for (AdjNode* j = routeNetwork.adjList[i->endPointId]->next; j != NULL; j = j->next)
-					expandCluster(edge, j->edgeId, q, count, routeNetwork);
-			}
-			for (AdjNode* i = routeNetwork.adjList[edge->endNodeId]->next; i != NULL; i = i->next) {
-				expandCluster(edge, i->edgeId, q, count, routeNetwork);
-				for (AdjNode* j = routeNetwork.adjList[i->endPointId]->next; j != NULL; j = j->next)
-					expandCluster(edge, j->edgeId, q, count, routeNetwork);
-			}
-		}
+		int tot = 0;
+		for each (Edge* edge in routeNetwork.edges)
+			if (edge && edge->globalSemanticType == i)
+				tot++;
+		os << i << ' '<<tot<<endl;
 	}
-	cout <<count  << endl;
+	
 /*	for each (Edge* edge in routeNetwork.edges)
 	{
-		cout << edge->id << ' ' << edge->localSemanticType << endl;
+		cout << edge->id << ' ' << edge->globalSemanticType << endl;
 	}
 */
 }
@@ -367,7 +393,7 @@ void outputJson()
 			figure["y"] = Json::Value(f->lat);
 			partner["figures"].append(Json::Value(figure));
 		}
-		partner["localSemanticType"] = Json::Value(edge->localSemanticType);
+		partner["localSemanticType"] = Json::Value(edge->globalSemanticType);
 	//	cout << sw.write(partner);
 		root["edges"].append(Json::Value(partner));
 	}
@@ -415,15 +441,31 @@ void outputJson()
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
+	/*
+	double tot = 0;
+	for each (Edge* edge in routeNetwork.edges)
+		if (edge)
+		for (double c : edge->poiNums)
+			tot += c;
+	cout << tot << endl;
+	*/
+	
+	os.open("count.txt");
 	//poiNums数组归一化
 	poiNumsNormalize(routeNetwork);
-	//计算路段所属种类
-	getLocalSemanticType(routeNetwork);
+	for (int i = 99; i >90; i-=1)
+	{
+		semanticThreshold = (double)i*0.01;
+		os << endl<<semanticThreshold << '\t';
+		for each (Edge* edge in routeNetwork.edges)
+			if (edge)edge->globalSemanticType = -1;
+		//计算路段所属种类
+		getGlobalSemanticType(routeNetwork);
+	//	break;
+	}
+	os.close();
+	//outputJson();
 	//检查POI读入正确性使用 
-	
-	outputJson();
-
-	system("pause");
-	outputSemanticRouteNetwork(routeNetwork, "semanticResultNormalized.txt");
+//	outputSemanticRouteNetwork(routeNetwork, "semanticResultNormalized.txt");
 }
 
