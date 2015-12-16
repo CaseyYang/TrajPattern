@@ -70,22 +70,6 @@ void edgeCluster() {
 	}
 }
 
-//实验准备工作，poiNums数组归一化
-void poiNumsNormalize(Map&routeNetwork) {
-	for each (Edge* edge in routeNetwork.edges)
-	{
-		if (edge == NULL) continue;
-		int count = 0;
-		for each(double num in edge->poiNums) {			
-			count += static_cast<int>(num);
-		}
-		if (count == 0) continue;
-		for (int i = 0; i < edge->poiNums.size(); ++i) {
-			edge->poiNums[i] = edge->poiNums[i] / count;
-		}
-	}
-}
-
 //naive方法的辅助函数：判断给定的两个路段聚类是否满足扩展条件：满足返回true；否则返回false
 bool couldExtendOrNot(set<int> &set1, set<int> &set2, int &intersectionCount) {
 	set<int> unionResult = set<int>();
@@ -477,8 +461,6 @@ void main() {
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
 	out.open("cout.txt");
 	os.open("count.txt");
-	//poiNums数组归一化
-	poiNumsNormalize(routeNetwork);
 	for (int i = 10; i <=15; i+=1)
 	{
 		//计算路段所属种类

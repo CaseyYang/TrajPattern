@@ -137,9 +137,8 @@ void generateSemanticRoad(Map&routeNetwork, string filePath) {
 				last = i + 1;
 				if (separatorNum == 1) {
 					if ((*edgeIter)->id != curNum) {
-						cout << "The edge id cannot match the id from poi file! error!" << endl;
-						cout << (*edgeIter)->id << endl;
-						cout << curNum << endl;
+						cout << "当前枚举的路段Id和从文件中读取的路段Id不符！" << endl;
+						cout << "当前枚举的路段Id" << (*edgeIter)->id << " 从文件中读取的路段Id" << curNum << endl;
 						system("pause");
 					}
 				}
@@ -149,10 +148,11 @@ void generateSemanticRoad(Map&routeNetwork, string filePath) {
 				}
 			}
 		}
+		//最后一个逗号分隔的是路段的语义聚类Id
 		if (separatorNum > 1) {
 			string curStr = rawStr.substr(last, rawStr.size() - last);
 			int curNum = atoi(curStr.c_str());
-			(*edgeIter)->poiNums[separatorNum - 1] = curNum;
+			(*edgeIter)->globalSemanticType = curNum;
 		}
 		++edgeIter;
 		while (*edgeIter == NULL) ++edgeIter;
@@ -161,10 +161,10 @@ void generateSemanticRoad(Map&routeNetwork, string filePath) {
 }
 
 //输出路段id和poiNum数组到指定文件
-void outputSemanticRouteNetwork(Map&routeNetwork,string filePath) {
+void outputSemanticRouteNetwork(Map&routeNetwork, string filePath) {
 	ofstream fout(filePath);
 	bool first = true;
-	for each (pair<string,int> category in Edge::poiCategories)
+	for each (pair<string, int> category in Edge::poiCategories)
 	{
 		if (first) {
 			first = false;
@@ -177,7 +177,7 @@ void outputSemanticRouteNetwork(Map&routeNetwork,string filePath) {
 	fout << endl;
 	for each(Edge* edgePtr in routeNetwork.edges) {
 		if (edgePtr == NULL) continue;
-	//	if (edgePtr->poiNums.size() > 0)continue;
+		//	if (edgePtr->poiNums.size() > 0)continue;
 		fout << edgePtr->id;
 		for each(double num in edgePtr->poiNums) {
 			fout << "," << num;
