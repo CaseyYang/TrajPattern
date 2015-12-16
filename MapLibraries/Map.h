@@ -44,7 +44,7 @@ struct Edge
 	bool visited;  //辅助字段，外部调用勿改动
 	int id;  //路段id
 	vector<double> poiNums;  //路段附近POI类型统计
-	int localSemanticType=-1;  //路段所属种类
+	int globalSemanticType=-1;  //路段所属种类
 	Edge();
 };
 
@@ -55,6 +55,11 @@ struct AdjNode //邻接表结点
 	AdjNode* next;
 };
 
+struct semanticCluster
+{
+	vector<Edge*>cluster;
+	double SSE;
+};
 class Map
 {
 public:

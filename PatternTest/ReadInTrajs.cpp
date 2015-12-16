@@ -152,7 +152,7 @@ void generateSemanticRoad(Map&routeNetwork, string filePath) {
 		if (separatorNum > 1) {
 			string curStr = rawStr.substr(last, rawStr.size() - last);
 			int curNum = atoi(curStr.c_str());
-			(*edgeIter)->poiNums[separatorNum - 2] = curNum;
+			(*edgeIter)->poiNums[separatorNum - 1] = curNum;
 		}
 		++edgeIter;
 		while (*edgeIter == NULL) ++edgeIter;
@@ -177,6 +177,7 @@ void outputSemanticRouteNetwork(Map&routeNetwork,string filePath) {
 	fout << endl;
 	for each(Edge* edgePtr in routeNetwork.edges) {
 		if (edgePtr == NULL) continue;
+	//	if (edgePtr->poiNums.size() > 0)continue;
 		fout << edgePtr->id;
 		for each(double num in edgePtr->poiNums) {
 			fout << "," << num;
