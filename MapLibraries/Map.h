@@ -55,6 +55,11 @@ struct AdjNode //邻接表结点
 	AdjNode* next;
 };
 
+struct semanticCluster
+{
+	vector<Edge*>cluster;
+	double SSE;
+};
 class Map
 {
 public:
