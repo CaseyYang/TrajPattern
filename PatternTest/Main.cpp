@@ -305,7 +305,7 @@ int main() {
 	//挖掘路段序列
 	clock_t start, finish;
 	start = clock();
-	ndbcResults = methodWithKPruningAndMoreInfo();
+	methodWithKPruningAndMoreInfo();
 	finish = clock();
 	cout << "用时：" << finish - start << "毫秒" << endl;
 
