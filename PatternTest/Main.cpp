@@ -7,6 +7,7 @@
 #include "NewTimeSlice.h"
 #include "Parameters.h"
 #include "Evaluation.h"
+#include "FineGrainedPattern.h"
 //#include "Semantics.h"
 using namespace std;
 
@@ -17,7 +18,8 @@ string trajInputDirectory = "9daysForTrajPattern\\input";
 string matchedEdgeDirectory = "9daysForTrajPattern\\answer";
 Map routeNetwork(rootDirectory+mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
-list<list<EdgeCluster*>> resultsList;//结果
+list<list<EdgeCluster*>> ndbcResults;//NDBC结果
+list<FineGrainedPattern*> fineGrainedPatterns;//细粒度轨迹模式
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
 vector<TimeSlice*> clusterDemo() {
@@ -113,7 +115,7 @@ list<EdgeCluster*> extendDensityEdges(EdgeCluster* edgeCluster) {
 
 //naive方法
 list<list<EdgeCluster*>> naiveMethod() {
-	resultsList = list<list<EdgeCluster*>>();
+	ndbcResults = list<list<EdgeCluster*>>();
 	list<list<EdgeCluster*>> canadidates = list<list<EdgeCluster*>>();//候选序列集合
 	for (auto timeSlice : timeSlices) {
 		list<list<EdgeCluster*>> newCanadidates = list<list<EdgeCluster*>>();//新的候选序列集合
@@ -122,7 +124,7 @@ list<list<EdgeCluster*>> naiveMethod() {
 			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdges(lastSnapshotCluster);
 			if (assignedEdgeClusters.size() == 0) {
 				if (canadidate.size() >= DE_DURATIVE) {//满足持续性条件
-					resultsList.push_back(canadidate);
+					ndbcResults.push_back(canadidate);
 				}
 			}
 			else {
@@ -143,7 +145,7 @@ list<list<EdgeCluster*>> naiveMethod() {
 		}
 		canadidates = newCanadidates;//更新候选序列集合
 	}
-	return resultsList;
+	return ndbcResults;
 }
 
 //带k值剪枝的方法的辅助函数：在下一时间片中扩展给定的路段聚类
@@ -177,7 +179,7 @@ list<EdgeCluster*> extendDensityEdgesWithKPruning(EdgeCluster* edgeCluster) {
 
 //带k值剪枝的方法
 list<list<EdgeCluster*>> methodWithKPruning() {
-	resultsList = list<list<EdgeCluster*>>();
+	ndbcResults = list<list<EdgeCluster*>>();
 	list<list<EdgeCluster*>> canadidates = list<list<EdgeCluster*>>();//候选序列集合
 	for (auto timeSlice : timeSlices) {
 		list<list<EdgeCluster*>> newCanadidates = list<list<EdgeCluster*>>();//新的候选序列集合
@@ -187,7 +189,7 @@ list<list<EdgeCluster*>> methodWithKPruning() {
 			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdgesWithKPruning(lastSnapshotCluster);
 			if (assignedEdgeClusters.size() == 0) {
 				if (canadidate.size() >= DE_DURATIVE) {//满足持续性条件
-					resultsList.push_back(canadidate);
+					ndbcResults.push_back(canadidate);
 				}
 			}
 			else {
@@ -208,7 +210,7 @@ list<list<EdgeCluster*>> methodWithKPruning() {
 		}
 		canadidates = newCanadidates;//更新候选序列集合
 	}
-	return resultsList;
+	return ndbcResults;
 }
 
 //利用后续匹配路段信息的方法的辅助函数：在下一时间片中扩展给定的路段聚类
@@ -242,7 +244,7 @@ list<EdgeCluster*> extendDensityEdgesWithKPruningAndMoreInfo(EdgeCluster* edgeCl
 
 //利用后续匹配路段信息的方法
 list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
-	resultsList = list<list<EdgeCluster*>>();
+	ndbcResults = list<list<EdgeCluster*>>();
 	list<list<EdgeCluster*>> canadidates = list<list<EdgeCluster*>>();//候选序列集合
 	for (auto timeSlice : timeSlices) {
 		list<list<EdgeCluster*>> newCanadidates = list<list<EdgeCluster*>>();//新的候选序列集合
@@ -252,7 +254,7 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdgesWithKPruningAndMoreInfo(lastSnapshotCluster);
 			if (assignedEdgeClusters.size() == 0) {
 				if (canadidate.size() >= DE_DURATIVE) {//满足持续性条件
-					resultsList.push_back(canadidate);
+					ndbcResults.push_back(canadidate);
 				}
 			}
 			else {
@@ -273,45 +275,58 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 		}
 		canadidates = newCanadidates;//更新候选序列集合
 	}
-	return resultsList;
+	return ndbcResults;
 }
 
-//int main() {
-//	//建立路网；读入地图匹配结果并构造路段聚类
-//	edgeCluster();//读入地图匹配结果并构造路段聚类
-//
-//	//挖掘路段序列
-//	clock_t start, finish;
-//	start = clock();
-//	resultsList = methodWithKPruningAndMoreInfo();
-//	finish = clock();
-//	cout << "用时：" << finish - start << "毫秒" << endl;
-//
-//	//评估路段序列
-//	cout << "共得到" << resultsList.size() << "个模式序列" << endl;
-//	//getDistinctEdges();
-//	filterInvalidEdgeSet();
-//	//getDistinctEdges();
-//	statisticDistinctEdges();
-//
-//	//getTimeStatistic();
-//	//getAverageSpeed();
-//
-//	//输出路段序列
-//	//outputResults("filteredResults.txt");
-//	//统计路段出现的频数并保存至集合distinctEdges
-//	//输出集合distinctEdges至Json文件
-//	OutputDistinctEdgesToJson(statisticDistinctEdges());
-//	system("pause");
-//	return 0;
-//}
+list<FineGrainedPattern*> transferNDBCResultToFineGrainedPatterns() {
+	fineGrainedPatterns = list<FineGrainedPattern*>();
+	for each (list<EdgeCluster*> pattern in ndbcResults)
+	{
+		if (pattern.size() == 0) {
+			cout << "发现空序列！" << endl;
+			system("pause");
+			continue;
+		}
+		FineGrainedPattern* fineGrainedPatternPtr = new FineGrainedPattern(pattern);
+		fineGrainedPatterns.push_back(fineGrainedPatternPtr);
+	}
+}
 
-void main() {
+int main() {
 	//读入POI分布文件，填充poiNums数组
-	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
+	generateSemanticRoad(routeNetwork, rootDirectory + semanticRoadFilePath);
 	//poiNums数组归一化
 	poiNumsNormalize(routeNetwork);
 	//检查POI读入正确性使用 
-	outputSemanticRouteNetwork(routeNetwork, "semanticResultNormalized.txt");
-}
+	//outputSemanticRouteNetwork(routeNetwork, "semanticResultNormalized.txt");
+	//建立路网；读入地图匹配结果并构造路段聚类
+	edgeCluster();//读入地图匹配结果并构造路段聚类
 
+	//挖掘路段序列
+	clock_t start, finish;
+	start = clock();
+	ndbcResults = methodWithKPruningAndMoreInfo();
+	finish = clock();
+	cout << "用时：" << finish - start << "毫秒" << endl;
+
+	//NDBC扩展
+	transferNDBCResultToFineGrainedPatterns();
+
+	////评估路段序列
+	//cout << "共得到" << ndbcResults.size() << "个模式序列" << endl;
+	////getDistinctEdges();
+	//filterInvalidEdgeSet();
+	////getDistinctEdges();
+	//statisticDistinctEdges();
+
+	////getTimeStatistic();
+	////getAverageSpeed();
+
+	////输出路段序列
+	////outputResults("filteredResults.txt");
+	////统计路段出现的频数并保存至集合distinctEdges
+	////输出集合distinctEdges至Json文件
+	//OutputDistinctEdgesToJson(statisticDistinctEdges());
+	//system("pause");
+	//return 0;
+}

@@ -3,7 +3,7 @@
 #include "Cluster.h"
 #include "EdgeCluster.h"
 
-extern list<list<EdgeCluster*>> resultsList;
+extern list<list<EdgeCluster*>> ndbcResults;
 
 struct SubTraj {
 	Edge* endEdge;//子轨迹当前最后一个路段指针
