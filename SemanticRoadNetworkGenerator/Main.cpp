@@ -10,6 +10,7 @@ string mapDirectory = "新加坡轨迹数据\\";
 string poiFilePath = "NDBC扩展\\poi.csv";
 string semanticRoadFilePath = "semanticRoad.txt";
 double neighborRange = 200.0;
+int KMEANS_K = 13;
 Map routeNetwork(rootDirectory + mapDirectory, 500);
 map<string, int> categories;
 int poiSize = 13;
@@ -189,6 +190,6 @@ void getGlobalSemanticType(vector<Edge*> &edges, int k)
 void main() {
 	generateSemanticRouteNetwork();
 	poiNumsNormalize();
-	getGlobalSemanticType(routeNetwork.edges, 13);
+	getGlobalSemanticType(routeNetwork.edges, KMEANS_K);
 	outputSemanticRouteNetwork(semanticRoadFilePath);
 }
