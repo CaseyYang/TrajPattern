@@ -45,6 +45,9 @@
     <ClInclude Include="Semantics.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\MapLibraries\json\json.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="FineGrainedPattern.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -75,6 +78,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\MapLibraries\Map.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MapLibraries\json\jsoncpp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="FineGrainedPattern.cpp">

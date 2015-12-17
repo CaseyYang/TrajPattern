@@ -7,6 +7,7 @@
 #include "NewTimeSlice.h"
 #include "Parameters.h"
 #include "Evaluation.h"
+#include "../MapLibraries/json/json.h"
 #include "FineGrainedPattern.h"
 //#include "Semantics.h"
 using namespace std;
@@ -16,7 +17,8 @@ string mapDirectory = "新加坡轨迹数据\\";
 string semanticRoadFilePath = "NDBC扩展\\semanticRoad.txt";
 string trajInputDirectory = "9daysForTrajPattern\\input";
 string matchedEdgeDirectory = "9daysForTrajPattern\\answer";
-Map routeNetwork(rootDirectory+mapDirectory, 500);
+string semanticRoadNetworkJsonFileName = "RouteNetworkData.js";
+Map routeNetwork(rootDirectory + mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> ndbcResults;//NDBC结果
 list<FineGrainedPattern*> fineGrainedPatterns;//细粒度轨迹模式
@@ -65,22 +67,6 @@ void edgeCluster() {
 	{
 		for (auto edgeCluster : timeSlice->clusters) {
 			edgeCluster.second->ascertainPriorCanadidates();
-		}
-	}
-}
-
-//实验准备工作，poiNums数组归一化
-void poiNumsNormalize(Map&routeNetwork) {
-	for each (Edge* edge in routeNetwork.edges)
-	{
-		if (edge == NULL) continue;
-		int count = 0;
-		for each(double num in edge->poiNums) {
-			count += static_cast<int>(num);
-		}
-		if (count == 0) continue;
-		for (int i = 0; i < edge->poiNums.size(); ++i) {
-			edge->poiNums[i] = edge->poiNums[i] / count;
 		}
 	}
 }

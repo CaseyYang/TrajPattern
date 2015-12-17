@@ -142,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\MapLibraries\GeoPoint.h" />
+    <ClInclude Include="..\MapLibraries\json\json.h" />
     <ClInclude Include="..\MapLibraries\Map.h" />
     <ClInclude Include="Cluster.h" />
     <ClInclude Include="Evaluation.h" />
@@ -155,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\MapLibraries\GeoPoint.cpp" />
+    <ClCompile Include="..\MapLibraries\json\jsoncpp.cpp" />
     <ClCompile Include="..\MapLibraries\Map.cpp" />
     <ClCompile Include="Cluster.cpp" />
     <ClCompile Include="EdgeCluster.cpp" />
