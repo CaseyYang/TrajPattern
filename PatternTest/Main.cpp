@@ -7,6 +7,7 @@
 #include "NewTimeSlice.h"
 #include "Parameters.h"
 #include "Evaluation.h"
+#include "../MapLibraries/json/json.h"
 //#include "Semantics.h"
 using namespace std;
 
@@ -15,9 +16,12 @@ string mapDirectory = "新加坡轨迹数据\\";
 string semanticRoadFilePath = "NDBC扩展\\semanticRoad.txt";
 string trajInputDirectory = "9daysForTrajPattern\\input";
 string matchedEdgeDirectory = "9daysForTrajPattern\\answer";
-Map routeNetwork(rootDirectory+mapDirectory, 500);
+string semanticRoadNetworkJsonFileName = "RouteNetworkData.js";
+Map routeNetwork(rootDirectory + mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> resultsList;//结果
+int poiSize = 13;
+ofstream os, out;
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
 vector<TimeSlice*> clusterDemo() {
@@ -63,22 +67,6 @@ void edgeCluster() {
 	{
 		for (auto edgeCluster : timeSlice->clusters) {
 			edgeCluster.second->ascertainPriorCanadidates();
-		}
-	}
-}
-
-//实验准备工作，poiNums数组归一化
-void poiNumsNormalize(Map&routeNetwork) {
-	for each (Edge* edge in routeNetwork.edges)
-	{
-		if (edge == NULL) continue;
-		int count = 0;
-		for each(double num in edge->poiNums) {
-			count += static_cast<int>(num);
-		}
-		if (count == 0) continue;
-		for (int i = 0; i < edge->poiNums.size(); ++i) {
-			edge->poiNums[i] = edge->poiNums[i] / count;
 		}
 	}
 }
@@ -276,6 +264,163 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 	return resultsList;
 }
 
+
+
+//求距离
+double getDistance(Edge* edge1, Edge* edge2)
+{
+	double t1 = 0, t2 = 0, t3 = 0;
+	for (int i = 0; i < poiSize; i++)
+	{
+		t1 += edge1->poiNums[i] * edge2->poiNums[i];
+		t2 += edge1->poiNums[i] * edge1->poiNums[i];
+		t3 += edge2->poiNums[i] * edge2->poiNums[i];
+	}
+	return 1 - t1 / sqrt(t2) / sqrt(t3);
+}
+
+Edge* calcCenter(vector<Edge*>& edges)
+{
+	Edge* center = new Edge();
+	center->poiNums = vector<double>(poiSize, 0);
+	for (int i = 0; i < poiSize; i++)
+	{
+		for (auto edge : edges)
+			center->poiNums[i] += edge->poiNums[i];
+		center->poiNums[i] /= edges.size();
+	}
+	double t = 0;
+	for (int i = 0; i < poiSize; i++)
+		t += center->poiNums[i] * center->poiNums[i];
+	t = sqrt(t);
+	for (int i = 0; i < poiSize; i++)
+		center->poiNums[i] /= t;
+	return center;
+}
+
+double calcSSE(semanticCluster& cluster, Edge*center)
+{
+
+	double SSE = 0;
+	for (auto edge : cluster.cluster)
+	{
+		SSE += getDistance(edge, center);
+	}
+	cluster.SSE = SSE;
+	return SSE;
+}
+
+void splitCluster(vector<semanticCluster>&clusters, int maxj)
+{
+	int iterTime = 15, testTime = 20, mj;
+	double minSSE = 1e10, SSE;
+	vector<semanticCluster>a(testTime), b(testTime);
+	Edge*center1, *center2;
+	srand(unsigned(time(NULL)));
+	for (int i = 0; i < testTime; i++)
+	{
+		int t1 = rand() % clusters[maxj].cluster.size(), t2 = rand() % clusters[maxj].cluster.size();
+		while (t1 == t2 || getDistance(clusters[maxj].cluster[t1], clusters[maxj].cluster[t2]) < 1e-10)t2 = rand() % clusters[maxj].cluster.size();
+		center1 = clusters[maxj].cluster[t1]; center2 = clusters[maxj].cluster[t2];
+		for (int j = 0; j < iterTime; j++)
+		{
+			a[i].cluster.clear(); b[i].cluster.clear();
+			for (int k = 0; k < clusters[maxj].cluster.size(); k++)
+				if (getDistance(clusters[maxj].cluster[k], center1) < getDistance(clusters[maxj].cluster[k], center2))
+					a[i].cluster.push_back(clusters[maxj].cluster[k]);
+				else b[i].cluster.push_back(clusters[maxj].cluster[k]);
+				center1 = calcCenter(a[i].cluster); center2 = calcCenter(b[i].cluster);
+				out << a[i].cluster.size() << ' ' << b[i].cluster.size() << ' ' << calcSSE(a[i], center1) << ' ' << calcSSE(b[i], center2) << endl;
+		}
+		out << endl;
+		SSE = calcSSE(a[i], center1) + calcSSE(b[i], center2);
+		if (SSE < minSSE) { minSSE = SSE; mj = i; }
+	}
+	clusters[maxj] = a[mj]; clusters.push_back(b[mj]);
+}
+
+
+//计算路段所属种类
+void getGlobalSemanticType(vector<Edge*> &edges, int k)
+{
+	vector<semanticCluster>clusters;
+	semanticCluster cluster;
+	for each (Edge* edge in edges)
+		if (edge&&edge->poiNums.size() >= poiSize)
+			cluster.cluster.push_back(edge);
+	clusters.push_back(cluster);
+	double  maxSSE; int maxj = 0;
+	for (int i = 1; i < k; i++)
+	{
+		maxSSE = 0;
+		for (int j = 0; j < clusters.size(); j++)
+			if (clusters[j].SSE>maxSSE)
+			{
+				maxSSE = clusters[j].SSE; maxj = j;
+			}
+		//cout << maxSSE << endl;
+		splitCluster(clusters, maxj);
+
+	}
+	for (int i = 1; i <= k; i++)
+		for (auto edge : clusters[i - 1].cluster)
+			edge->globalSemanticType = i;
+	os << "count=" << k << endl;
+	cout << "count=" << k << endl;
+	for (int i = -1; i <= k; i++)
+	{
+		int tot = 0;
+		for each (Edge* edge in routeNetwork.edges)
+			if (edge && edge->globalSemanticType == i)
+				tot++;
+		os << i << ' ' << tot << ' ';
+		//	cout << i << ' ' << tot << ' ';
+		//	if (i > 0)os << clusters[i - 1].SSE;
+		os << endl; //cout << endl;
+	}
+
+	/*	for each (Edge* edge in routeNetwork.edges)
+		{
+			cout << edge->id << ' ' << edge->globalSemanticType << endl;
+		}
+	*/
+}
+
+//输出路网及语义聚类信息至指定js文件
+void outputSemanticRouteNetworkToJson(string fileName)
+{
+	//根节点
+	Json::Value root;
+	//根节点属性
+	root["city"] = Json::Value("Singapore");
+	Json::StyledWriter sw;
+	for each (Edge* edge in routeNetwork.edges)
+		if (edge != NULL)
+		{
+			Json::Value partner;
+			//子节点属性
+			partner["edgeId"] = Json::Value(edge->id);
+			partner["numOfFigures"] = Json::Value(edge->figure->size());
+			for each(auto f in *edge->figure)
+			{
+				Json::Value figure;
+				//cout << f->lat << ' ' << f->lon << endl;
+				figure["x"] = Json::Value(f->lon);
+				figure["y"] = Json::Value(f->lat);
+				partner["figures"].append(Json::Value(figure));
+			}
+			partner["localSemanticType"] = Json::Value(edge->globalSemanticType);
+			//cout << sw.write(partner);
+			root["edges"].append(Json::Value(partner));
+		}
+	//输出到文件
+	ofstream os;
+	os.open(fileName);
+	os << "routeNetwork =" << endl;
+	os << sw.write(root);
+	os.close();
+}
+
 //int main() {
 //	//建立路网；读入地图匹配结果并构造路段聚类
 //	edgeCluster();//读入地图匹配结果并构造路段聚类
@@ -308,10 +453,17 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 
 void main() {
 	//读入POI分布文件，填充poiNums数组
-	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
-	//poiNums数组归一化
-	poiNumsNormalize(routeNetwork);
+	generateSemanticRoad(routeNetwork, rootDirectory + semanticRoadFilePath);
+	out.open("cout.txt");
+	os.open("count.txt");
+	for (int i = 10; i <= 15; i += 1)
+	{
+		//计算路段所属种类
+		getGlobalSemanticType(routeNetwork.edges, i);
+	}
+	os.close(); out.close();
+	//outputSemanticRouteNetworkToJson(semanticRoadNetworkJsonFileName);
 	//检查POI读入正确性使用 
-	outputSemanticRouteNetwork(routeNetwork, "semanticResultNormalized.txt");
+	//outputSemanticRouteNetworkToPlainText(routeNetwork, "semanticResultNormalized.txt");
 }
 
