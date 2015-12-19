@@ -2,6 +2,7 @@
 #include <iterator>
 #include <time.h>
 #include <cmath>
+#include <map>
 #include "ReadInTrajs.h"
 #include "../MapLibraries/Map.h"
 #include "TimeSlice.h"
@@ -11,6 +12,7 @@
 #include "../MapLibraries/json/json.h"
 #include "FineGrainedPattern.h"
 #include "PatternTimeSlot.h"
+#include "PatternCluster.h"
 //#include "Semantics.h"
 using namespace std;
 
@@ -24,6 +26,8 @@ Map routeNetwork(rootDirectory + mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> ndbcResults;//NDBC结果
 list<FineGrainedPattern*> fineGrainedPatterns;//细粒度轨迹模式
+list<PatternCluster*> patternClusters;//对细粒度轨迹模式进行时空聚类后的结果
+
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
 vector<TimeSlice*> clusterDemo() {
@@ -326,9 +330,10 @@ void splitTimeSlot(vector<PatternTimeSlot>&timeSlots, int maxj)
 	timeSlots.push_back(b[mj]);
 }
 
-//对时间进行聚类
-list<PatternTimeSlot*> getTimeSlots()
+//对细粒度轨迹模式按时间段和语义进行聚类
+list<PatternCluster*> clusterFineGrainedPatterns()
 {
+	//首先按时间段进行聚类
 	vector<PatternTimeSlot> timeSlots;
 	PatternTimeSlot initTimeSlot=PatternTimeSlot(fineGrainedPatterns);
 	timeSlots.push_back(initTimeSlot);
@@ -343,11 +348,25 @@ list<PatternTimeSlot*> getTimeSlots()
 			}
 		splitTimeSlot(timeSlots, maxj);
 	}
+	//然后按语义进行聚类
+	map<int, PatternCluster*> semanticTypePatternClusterMap = map<int, PatternCluster*>();
 	for (int i = 1; i <= TIMECLUSTING_KMEANS_K; ++i) {
-		for (auto edge : timeSlots[i - 1].timeStamps) {
-			//TODO: 分时间片
+		for (FineGrainedPattern* pattern : timeSlots[i - 1].patterns) {
+			for each (EdgeCluster* edgeCluster in pattern->edgeClusterPattern)
+			{
+				PatternCluster* patternCluster = NULL;
+				int semanticType = edgeCluster->clusterCoreEdge->globalSemanticType;
+				if (semanticTypePatternClusterMap.find(semanticType) == semanticTypePatternClusterMap.end()) {
+					patternCluster = new PatternCluster();
+					patternCluster->semanticType = semanticType;
+					semanticTypePatternClusterMap[semanticType] = patternCluster;
+					patternClusters.push_back(patternCluster);
+				}
+				semanticTypePatternClusterMap[semanticType]->insertPattern(pattern);
+			}
 		}
 	}
+	return patternClusters;
 }
 
 
@@ -368,6 +387,8 @@ int main() {
 
 	//NDBC扩展
 	transferNDBCResultToFineGrainedPatterns();
+	clusterFineGrainedPatterns();
+
 
 	////评估路段序列
 	//cout << "共得到" << ndbcResults.size() << "个模式序列" << endl;

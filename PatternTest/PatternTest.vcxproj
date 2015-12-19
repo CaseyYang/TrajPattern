@@ -150,6 +150,7 @@
     <ClInclude Include="Parameters.h" />
     <ClInclude Include="EdgeCluster.h" />
     <ClInclude Include="NewTimeSlice.h" />
+    <ClInclude Include="PatternCluster.h" />
     <ClInclude Include="PatternTimeSlot.h" />
     <ClInclude Include="ReadInTrajs.h" />
     <ClInclude Include="Semantics.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="Evaluation.cpp" />
     <ClCompile Include="FineGrainedPattern.cpp" />
     <ClCompile Include="NewTimeSlice.cpp" />
+    <ClCompile Include="PatternCluster.cpp" />
     <ClCompile Include="PatternTimeSlot.cpp" />
     <ClCompile Include="ReadInTrajs.cpp" />
     <ClCompile Include="TimeSlice.cpp" />
