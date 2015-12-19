@@ -1,4 +1,6 @@
+#include<iterator>
 #include "Evaluation.h"
+using namespace std;
 
 int invalidEdges[] = { 55402, 27454, 27489, 55435 };
 set<int> invalidEdgeSet = set<int>();
@@ -39,7 +41,7 @@ void filterInvalidEdgeSet() {
 	for (auto invalidEdge : invalidEdges) {
 		invalidEdgeSet.insert(invalidEdge);
 	}
-	for (auto iter = resultsList.begin(); iter != resultsList.end();) {
+	for (auto iter = ndbcResults.begin(); iter != ndbcResults.end();) {
 		bool valid = true;
 		if (iter->size() > 60) {//过长的不要
 			valid = false;
@@ -53,13 +55,13 @@ void filterInvalidEdgeSet() {
 			}
 		}
 		if (!valid) {
-			iter = resultsList.erase(iter);
+			iter = ndbcResults.erase(iter);
 		}
 		else {
 			iter++;
 		}
 	}
-	cout << "经过过滤，得到" << resultsList.size() << "个有效序列" << endl;
+	cout << "经过过滤，得到" << ndbcResults.size() << "个有效序列" << endl;
 }
 
 //计算结果序列集合中所有包含的子轨迹的平均速度
@@ -72,7 +74,7 @@ void getAverageSpeed() {
 		perHourAverageSpeedCount.push_back(0);
 		perHourAverageSpeedResults.push_back(0);
 	}
-	for (auto result : resultsList) {
+	for (auto result : ndbcResults) {
 		map<int, SubTraj*> subTrajs = map<int, SubTraj*>();
 		set<int> lastTrajs = set<int>();
 		for (auto edgeCluster : result) {
@@ -134,7 +136,7 @@ void getAverageSpeed() {
 
 //统计结果路段数量
 void getDistinctEdges() {
-	for (auto result : resultsList) {
+	for (auto result : ndbcResults) {
 		for (auto resultEdge : result) {
 			if (distinctEdges.find(resultEdge->clusterCoreEdge) == distinctEdges.end()) {
 				distinctEdges.insert(resultEdge->clusterCoreEdge);
@@ -153,7 +155,7 @@ void getDistinctEdges() {
 //统计结果路段数量和出现频数
 map<Edge*, int> statisticDistinctEdges() {
 	map<Edge*, int> edgeCounts = map<Edge*, int>();
-	for (auto result : resultsList) {
+	for (auto result : ndbcResults) {
 		for (auto resultEdge : result) {
 			if (edgeCounts[resultEdge->clusterCoreEdge] == 0) {
 				edgeCounts[resultEdge->clusterCoreEdge] = 1;
@@ -205,7 +207,7 @@ void getTimeStatistic() {
 		timeStatistic.insert(make_pair(i, 0));
 	}
 	ofstream fout("timeStatistic.txt");
-	for (auto result : resultsList) {
+	for (auto result : ndbcResults) {
 		for (int time = result.front()->time / 60; time <= result.back()->time / 60; time++) {
 			timeStatistic.at(time)++;
 		}
@@ -219,8 +221,8 @@ void getTimeStatistic() {
 //输出结果序列集合
 void outputResults(string fileName) {
 	ofstream fout(fileName);
-	fout << resultsList.size() << endl;
-	for (auto resultList : resultsList) {
+	fout << ndbcResults.size() << endl;
+	for (auto resultList : ndbcResults) {
 		//cout << "结果包含" << resultList.size() << "个结果" << endl;
 		fout << resultList.size() << ":" << resultList.front()->time << "~" << resultList.back()->time << " ";
 		int lastId = -1;

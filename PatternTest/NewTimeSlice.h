@@ -2,7 +2,7 @@
 #include <set>
 #include <map>
 #include "EdgeCluster.h"
-#include "Map.h"
+#include "../MapLibraries/Map.h"
 
 class NewTimeSlice {
 public:

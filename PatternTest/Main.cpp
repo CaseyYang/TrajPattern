@@ -1,20 +1,29 @@
 #include <iostream>
 #include <iterator>
 #include <time.h>
+#include <cmath>
 #include "ReadInTrajs.h"
-#include "Map.h"
+#include "../MapLibraries/Map.h"
 #include "TimeSlice.h"
 #include "NewTimeSlice.h"
 #include "Parameters.h"
 #include "Evaluation.h"
+#include "../MapLibraries/json/json.h"
+#include "FineGrainedPattern.h"
+#include "PatternTimeSlot.h"
+//#include "Semantics.h"
 using namespace std;
 
-string filePath = "E:\\MapMatchingProject\\Data\\新加坡数据\\";
-string inputDirectory = "9daysForTrajPattern\\input";
-string answerDirectory = "9daysForTrajPattern\\answer";
-Map routeNetwork(filePath, 500);
+string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";
+string mapDirectory = "新加坡轨迹数据\\";
+string semanticRoadFilePath = "NDBC扩展\\semanticRoad.txt";
+string trajInputDirectory = "9daysForTrajPattern\\input";
+string matchedEdgeDirectory = "9daysForTrajPattern\\answer";
+string semanticRoadNetworkJsonFileName = "RouteNetworkData.js";
+Map routeNetwork(rootDirectory + mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
-list<list<EdgeCluster*>> resultsList;//结果
+list<list<EdgeCluster*>> ndbcResults;//NDBC结果
+list<FineGrainedPattern*> fineGrainedPatterns;//细粒度轨迹模式
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
 vector<TimeSlice*> clusterDemo() {
@@ -23,7 +32,7 @@ vector<TimeSlice*> clusterDemo() {
 	for (int timeStamp = 0; timeStamp < 1440; timeStamp++) {
 		timeSlices.at(timeStamp) = new TimeSlice(timeStamp);
 	}
-	scanTrajFolder(filePath, inputDirectory, timeSlices);//读入轨迹
+	scanTrajFolder(rootDirectory + mapDirectory, trajInputDirectory, timeSlices);//读入轨迹
 	cout << "读入所有轨迹" << endl;
 	int outIndexCount = 0;
 	for each (TimeSlice* timeSlice in timeSlices)//对轨迹采样点建立索引
@@ -47,21 +56,6 @@ vector<TimeSlice*> clusterDemo() {
 	return timeSlices;
 }
 
-//输出TimeSlice
-void outputTimeSlices(vector<TimeSlice*> &timeSlices) {
-	ofstream fout("DBScanResult_day5.txt");
-	for (auto timeSlice : timeSlices) {
-		fout << timeSlice->time << ":" << timeSlice->clusters.size() << endl;
-		for (auto cluster : timeSlice->clusters) {
-			for (auto object : cluster->objectIds) {
-				fout << object << " ";
-			}
-			fout << endl;
-		}
-	}
-	fout.close();
-}
-
 //实验准备工作：读取地图匹配结果，组成各时间片的路段聚类
 void edgeCluster() {
 	timeSlices = vector<NewTimeSlice*>(1440);//初始化时间片集合
@@ -69,7 +63,7 @@ void edgeCluster() {
 	for (int timeStamp = 0; timeStamp < 1440; timeStamp++) {
 		timeSlices.at(timeStamp) = new NewTimeSlice(timeStamp);
 	}
-	scanMapMatchingResultFolder(filePath, answerDirectory, timeSlices, routeNetwork);//读入地图匹配结果文件，填充时间片和路段聚类
+	scanMapMatchingResultFolder(rootDirectory + mapDirectory, matchedEdgeDirectory, timeSlices, routeNetwork);//读入地图匹配结果文件，填充时间片和路段聚类
 	cout << "读入所有地图匹配结果" << endl;
 	for (auto timeSlice : timeSlices)
 	{
@@ -109,7 +103,7 @@ list<EdgeCluster*> extendDensityEdges(EdgeCluster* edgeCluster) {
 
 //naive方法
 list<list<EdgeCluster*>> naiveMethod() {
-	resultsList = list<list<EdgeCluster*>>();
+	ndbcResults = list<list<EdgeCluster*>>();
 	list<list<EdgeCluster*>> canadidates = list<list<EdgeCluster*>>();//候选序列集合
 	for (auto timeSlice : timeSlices) {
 		list<list<EdgeCluster*>> newCanadidates = list<list<EdgeCluster*>>();//新的候选序列集合
@@ -118,7 +112,7 @@ list<list<EdgeCluster*>> naiveMethod() {
 			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdges(lastSnapshotCluster);
 			if (assignedEdgeClusters.size() == 0) {
 				if (canadidate.size() >= DE_DURATIVE) {//满足持续性条件
-					resultsList.push_back(canadidate);
+					ndbcResults.push_back(canadidate);
 				}
 			}
 			else {
@@ -139,7 +133,7 @@ list<list<EdgeCluster*>> naiveMethod() {
 		}
 		canadidates = newCanadidates;//更新候选序列集合
 	}
-	return resultsList;
+	return ndbcResults;
 }
 
 //带k值剪枝的方法的辅助函数：在下一时间片中扩展给定的路段聚类
@@ -173,7 +167,7 @@ list<EdgeCluster*> extendDensityEdgesWithKPruning(EdgeCluster* edgeCluster) {
 
 //带k值剪枝的方法
 list<list<EdgeCluster*>> methodWithKPruning() {
-	resultsList = list<list<EdgeCluster*>>();
+	ndbcResults = list<list<EdgeCluster*>>();
 	list<list<EdgeCluster*>> canadidates = list<list<EdgeCluster*>>();//候选序列集合
 	for (auto timeSlice : timeSlices) {
 		list<list<EdgeCluster*>> newCanadidates = list<list<EdgeCluster*>>();//新的候选序列集合
@@ -183,7 +177,7 @@ list<list<EdgeCluster*>> methodWithKPruning() {
 			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdgesWithKPruning(lastSnapshotCluster);
 			if (assignedEdgeClusters.size() == 0) {
 				if (canadidate.size() >= DE_DURATIVE) {//满足持续性条件
-					resultsList.push_back(canadidate);
+					ndbcResults.push_back(canadidate);
 				}
 			}
 			else {
@@ -204,7 +198,7 @@ list<list<EdgeCluster*>> methodWithKPruning() {
 		}
 		canadidates = newCanadidates;//更新候选序列集合
 	}
-	return resultsList;
+	return ndbcResults;
 }
 
 //利用后续匹配路段信息的方法的辅助函数：在下一时间片中扩展给定的路段聚类
@@ -238,7 +232,7 @@ list<EdgeCluster*> extendDensityEdgesWithKPruningAndMoreInfo(EdgeCluster* edgeCl
 
 //利用后续匹配路段信息的方法
 list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
-	resultsList = list<list<EdgeCluster*>>();
+	ndbcResults = list<list<EdgeCluster*>>();
 	list<list<EdgeCluster*>> canadidates = list<list<EdgeCluster*>>();//候选序列集合
 	for (auto timeSlice : timeSlices) {
 		list<list<EdgeCluster*>> newCanadidates = list<list<EdgeCluster*>>();//新的候选序列集合
@@ -248,7 +242,7 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 			list<EdgeCluster*> assignedEdgeClusters = extendDensityEdgesWithKPruningAndMoreInfo(lastSnapshotCluster);
 			if (assignedEdgeClusters.size() == 0) {
 				if (canadidate.size() >= DE_DURATIVE) {//满足持续性条件
-					resultsList.push_back(canadidate);
+					ndbcResults.push_back(canadidate);
 				}
 			}
 			else {
@@ -269,35 +263,141 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 		}
 		canadidates = newCanadidates;//更新候选序列集合
 	}
-	return resultsList;
+	return ndbcResults;
 }
 
+//把NDBC结果包装成FineGrainedPattern数组，便于后续处理
+list<FineGrainedPattern*> transferNDBCResultToFineGrainedPatterns() {
+	fineGrainedPatterns = list<FineGrainedPattern*>();
+	for each (list<EdgeCluster*> pattern in ndbcResults)
+	{
+		if (pattern.size() == 0) {
+			cout << "发现空序列！" << endl;
+			system("pause");
+			continue;
+		}
+		FineGrainedPattern* fineGrainedPatternPtr = new FineGrainedPattern(pattern);
+		fineGrainedPatterns.push_back(fineGrainedPatternPtr);
+	}
+}
+
+//对时间进行聚类的辅助函数：计算两个元素的相似度
+int getSimilarity(int obj1, int obj2) {
+	return abs(obj1 - obj2);
+}
+
+//对时间进行聚类的辅助函数：计算时间簇的SSE
+//SSE()
+double calcSSE(SemanticCluster& cluster, Edge*center)
+{
+
+	double SSE = 0;
+	for (auto edge : cluster.cluster)
+	{
+		SSE += getSimilarity(edge, center);
+	}
+	cluster.SSE = SSE;
+	return SSE;
+}
+
+//对时间进行聚类的辅助函数：分裂现有时间聚类
+void splitTimeSlot(vector<PatternTimeSlot>&timeSlots, int maxj)
+{
+	int mj;
+	double minSSE = 1e10, SSE;
+	vector<PatternTimeSlot> a(TIMECLUSTERING_KMEANS_TESTTIME), b(TIMECLUSTERING_KMEANS_TESTTIME);
+	int timeSlotCenter1, timeSlotCenter2;
+	srand(unsigned(time(NULL)));
+	for (int i = 0; i < TIMECLUSTERING_KMEANS_TESTTIME; i++)
+	{
+		int t1 = rand() % timeSlots[maxj].timeStamps.size(), t2 = rand() % timeSlots[maxj].timeStamps.size();
+		while (t1 == t2 || getSimilarity(timeSlots[maxj].timeStamps[t1], timeSlots[maxj].timeStamps[t2]) < eps) {
+			t2 = rand() % timeSlots[maxj].timeStamps.size();
+		}
+		timeSlotCenter1 = timeSlots[maxj].timeStamps[t1];
+		timeSlotCenter2 = timeSlots[maxj].timeStamps[t2];
+		for (int j = 0; j < TIMECLUSTERING_KMEANS_ITERTIME; j++)
+		{
+			a[i].timeStamps.clear();
+			b[i].timeStamps.clear();
+			for (int k = 0; k < timeSlots[maxj].timeStamps.size(); k++) {
+				if (getSimilarity(timeSlots[maxj].timeStamps[k], timeSlotCenter1) < getSimilarity(timeSlots[maxj].timeStamps[k], timeSlotCenter2)) {
+					a[i].InsertPattern(timeSlots[maxj].patterns[k]);
+				}
+				else {
+					b[i].InsertPattern(timeSlots[maxj].patterns[k]);
+				}
+				timeSlotCenter1 = a[i].center;
+				timeSlotCenter2 = b[i].center;
+			}
+		}
+		SSE = calcSSE(a[i], timeSlotCenter1) + calcSSE(b[i], timeSlotCenter2);
+		if (SSE < minSSE) {
+			minSSE = SSE; mj = i;
+		}
+	}
+	timeSlots[maxj] = a[mj];
+	timeSlots.push_back(b[mj]);
+}
+
+//对时间进行聚类
+list<PatternTimeSlot*> getTimeSlots()
+{
+	vector<PatternTimeSlot> timeSlots;
+	PatternTimeSlot initTimeSlot=PatternTimeSlot(fineGrainedPatterns);
+	timeSlots.push_back(initTimeSlot);
+	double maxSSE; int maxj = 0;
+	for (int i = 1; i < TIMECLUSTING_KMEANS_K; ++i)
+	{
+		maxSSE = 0;
+		for (int j = 0; j < timeSlots.size(); ++j)
+			if (timeSlots[j].SSE>maxSSE)
+			{
+				maxSSE = timeSlots[j].SSE; maxj = j;
+			}
+		splitTimeSlot(timeSlots, maxj);
+	}
+	for (int i = 1; i <= TIMECLUSTING_KMEANS_K; ++i) {
+		for (auto edge : timeSlots[i - 1].timeStamps) {
+			//TODO: 分时间片
+		}
+	}
+}
+
+
 int main() {
+	//读入POI分布文件，填充poiNums数组
+	generateSemanticRoad(routeNetwork, rootDirectory + semanticRoadFilePath);
+	//检查POI读入正确性使用 
+	//outputSemanticRouteNetworkToPlainText(routeNetwork, "semanticResultNormalized.txt");
 	//建立路网；读入地图匹配结果并构造路段聚类
 	edgeCluster();//读入地图匹配结果并构造路段聚类
 
 	//挖掘路段序列
 	clock_t start, finish;
 	start = clock();
-	resultsList = methodWithKPruningAndMoreInfo();
+	methodWithKPruningAndMoreInfo();
 	finish = clock();
 	cout << "用时：" << finish - start << "毫秒" << endl;
 
-	//评估路段序列
-	cout << "共得到" << resultsList.size() << "个模式序列" << endl;
-	//getDistinctEdges();
-	filterInvalidEdgeSet();
-	//getDistinctEdges();
-	statisticDistinctEdges();
+	//NDBC扩展
+	transferNDBCResultToFineGrainedPatterns();
 
-	//getTimeStatistic();
-	//getAverageSpeed();
+	////评估路段序列
+	//cout << "共得到" << ndbcResults.size() << "个模式序列" << endl;
+	////getDistinctEdges();
+	//filterInvalidEdgeSet();
+	////getDistinctEdges();
+	//statisticDistinctEdges();
 
-	//输出路段序列
-	//outputResults("filteredResults.txt");
-	//统计路段出现的频数并保存至集合distinctEdges
-	//输出集合distinctEdges至Json文件
-	OutputDistinctEdgesToJson(statisticDistinctEdges());
-	system("pause");
-	return 0;
+	////getTimeStatistic();
+	////getAverageSpeed();
+
+	////输出路段序列
+	////outputResults("filteredResults.txt");
+	////统计路段出现的频数并保存至集合distinctEdges
+	////输出集合distinctEdges至Json文件
+	//OutputDistinctEdgesToJson(statisticDistinctEdges());
+	//system("pause");
+	//return 0;
 }

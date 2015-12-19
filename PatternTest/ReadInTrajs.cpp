@@ -70,7 +70,7 @@ void scanTrajFolder(string folderDir, string inputDirectory, vector<TimeSlice*> 
 	string completeInputFilesPath = folderDir + inputDirectory + "\\" + "*.txt";
 	const char* dir = completeInputFilesPath.c_str();
 	_finddata_t fileInfo;//文件信息
-	long lf;//文件句柄
+	intptr_t lf;//文件句柄
 	if ((lf = _findfirst(dir, &fileInfo)) == -1l) {
 		cout << "文件夹" << completeInputFilesPath << "下未找到指定文件！" << endl;
 		return;
@@ -93,7 +93,7 @@ void scanMapMatchingResultFolder(string folderDir, string inputDirectory, vector
 	string completeInputFilesPath = folderDir + inputDirectory + "\\" + "*.txt";
 	const char* dir = completeInputFilesPath.c_str();
 	_finddata_t fileInfo;//文件信息
-	long lf;//文件句柄
+	intptr_t lf;//文件句柄
 	if ((lf = _findfirst(dir, &fileInfo)) == -1l) {
 		return;
 	}
@@ -107,4 +107,99 @@ void scanMapMatchingResultFolder(string folderDir, string inputDirectory, vector
 		_findclose(lf);
 		return;
 	}
+}
+
+//读入路段附近POI统计文件，填充每个路段的poiNums数组
+void generateSemanticRoad(Map&routeNetwork, string filePath) {
+	ifstream fin(filePath);
+	string rawStr;
+	fin >> rawStr;
+	int index = 0;
+	int last = 0;
+	for (int i = 0; i < rawStr.size(); ++i) {
+		if (rawStr[i] == ',') {
+			string category = rawStr.substr(last, i - last);
+			Edge::poiCategories.insert(make_pair(category, index++));
+			last = i + 1;
+		}
+	}
+	string category = rawStr.substr(last, rawStr.size() - last);
+	Edge::poiCategories.insert(make_pair(category, index++));
+	vector<Edge*>::iterator edgeIter = routeNetwork.edges.begin();
+	while (fin >> rawStr) {
+		int last = 0;
+		int separatorNum = 0;
+		for (int i = 0; i < rawStr.size(); ++i) {
+			if (rawStr[i] == ',') {
+				++separatorNum;
+				string curStr = rawStr.substr(last, i - last);
+				int curNum = atoi(curStr.c_str());
+				last = i + 1;
+				if (separatorNum == 1) {
+					if ((*edgeIter)->id != curNum) {
+						cout << "当前枚举的路段Id和从文件中读取的路段Id不符！" << endl;
+						cout << "当前枚举的路段Id" << (*edgeIter)->id << " 从文件中读取的路段Id" << curNum << endl;
+						system("pause");
+					}
+				}
+				else {
+					if ((*edgeIter)->poiNums.size() == 0) (*edgeIter)->poiNums = vector<double>(Edge::poiCategories.size());
+					(*edgeIter)->poiNums[separatorNum - 2] = curNum;
+				}
+			}
+		}
+		//最后一个逗号分隔的是路段的语义聚类Id
+		if (separatorNum > 1) {
+			string curStr = rawStr.substr(last, rawStr.size() - last);
+			int curNum = atoi(curStr.c_str());
+			(*edgeIter)->globalSemanticType = curNum;
+		}
+		++edgeIter;
+		while (*edgeIter == NULL) ++edgeIter;
+	}
+	fin.close();
+}
+
+//输出路段的poiNums数组至指定文件
+//文件格式为：
+//第一行：		POI种类名称（逗号分隔）
+//第二行及以后：	路段Id,第一种POI的归一化数量,第二种POI的归一化数量,……最后一种POI的归一化数量,路段所属语义聚类Id（即globalSemanticType）
+void outputSemanticRouteNetworkToPlainText(Map&routeNetwork,string filePath) {
+	ofstream fout(filePath);
+	bool first = true;
+	for each (pair<string, int> category in Edge::poiCategories)
+	{
+		if (first) {
+			first = false;
+		}
+		else {
+			fout << ",";
+		}
+		fout << category.first;
+	}
+	fout << endl;
+	for each(Edge* edgePtr in routeNetwork.edges) {
+		if (edgePtr == NULL) continue;
+		fout << edgePtr->id;
+		for each(double num in edgePtr->poiNums) {
+			fout << "," << num;
+		}
+		fout << "," << edgePtr->globalSemanticType << endl;
+	}
+	fout.close();
+}
+
+//输出TimeSlice
+void outputTimeSlices(vector<TimeSlice*> &timeSlices) {
+	ofstream fout("DBScanResult_day5.txt");
+	for (auto timeSlice : timeSlices) {
+		fout << timeSlice->time << ":" << timeSlice->clusters.size() << endl;
+		for (auto cluster : timeSlice->clusters) {
+			for (auto object : cluster->objectIds) {
+				fout << object << " ";
+			}
+			fout << endl;
+		}
+	}
+	fout.close();
 }
