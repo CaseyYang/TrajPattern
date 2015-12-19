@@ -286,20 +286,6 @@ int getSimilarity(int obj1, int obj2) {
 	return abs(obj1 - obj2);
 }
 
-//对时间进行聚类的辅助函数：计算时间簇的SSE
-//SSE()
-double calcSSE(SemanticCluster& cluster, Edge*center)
-{
-
-	double SSE = 0;
-	for (auto edge : cluster.cluster)
-	{
-		SSE += getSimilarity(edge, center);
-	}
-	cluster.SSE = SSE;
-	return SSE;
-}
-
 //对时间进行聚类的辅助函数：分裂现有时间聚类
 void splitTimeSlot(vector<PatternTimeSlot>&timeSlots, int maxj)
 {
@@ -322,16 +308,16 @@ void splitTimeSlot(vector<PatternTimeSlot>&timeSlots, int maxj)
 			b[i].timeStamps.clear();
 			for (int k = 0; k < timeSlots[maxj].timeStamps.size(); k++) {
 				if (getSimilarity(timeSlots[maxj].timeStamps[k], timeSlotCenter1) < getSimilarity(timeSlots[maxj].timeStamps[k], timeSlotCenter2)) {
-					a[i].InsertPattern(timeSlots[maxj].patterns[k]);
+					a[i].insertPattern(timeSlots[maxj].patterns[k]);
 				}
 				else {
-					b[i].InsertPattern(timeSlots[maxj].patterns[k]);
+					b[i].insertPattern(timeSlots[maxj].patterns[k]);
 				}
 				timeSlotCenter1 = a[i].center;
 				timeSlotCenter2 = b[i].center;
 			}
 		}
-		SSE = calcSSE(a[i], timeSlotCenter1) + calcSSE(b[i], timeSlotCenter2);
+		SSE = a[i].calcSSE() + b[i].calcSSE();
 		if (SSE < minSSE) {
 			minSSE = SSE; mj = i;
 		}

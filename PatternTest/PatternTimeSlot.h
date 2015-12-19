@@ -13,7 +13,8 @@ public:
 	double SSE;
 	PatternTimeSlot();
 	PatternTimeSlot(list<FineGrainedPattern*>&patterns);
-	void InsertPattern(FineGrainedPattern* pattern);
+	void insertPattern(FineGrainedPattern* pattern);	//向时间簇中增加一个元素
+	double calcSSE();									//计算时间簇的SSE（误差平方和）
 	~PatternTimeSlot();
 };
 
