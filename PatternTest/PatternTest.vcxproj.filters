@@ -51,6 +51,9 @@
     <ClInclude Include="FineGrainedPattern.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="PatternTimeSlot.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ReadInTrajs.cpp">
@@ -84,6 +87,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="FineGrainedPattern.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PatternTimeSlot.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

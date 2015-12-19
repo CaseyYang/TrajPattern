@@ -122,7 +122,7 @@ Edge* calcCenter(vector<Edge*>& edges)
 	return center;
 }
 
-double calcSSE(semanticCluster& cluster, Edge*center)
+double calcSSE(SemanticCluster& cluster, Edge*center)
 {
 
 	double SSE = 0;
@@ -134,11 +134,11 @@ double calcSSE(semanticCluster& cluster, Edge*center)
 	return SSE;
 }
 
-void splitCluster(vector<semanticCluster>&clusters, int maxj)
+void splitCluster(vector<SemanticCluster>&clusters, int maxj)
 {
 	int iterTime = 15, testTime = 20, mj;
 	double minSSE = 1e10, SSE;
-	vector<semanticCluster>a(testTime), b(testTime);
+	vector<SemanticCluster>a(testTime), b(testTime);
 	Edge*center1, *center2;
 	srand(unsigned(time(NULL)));
 	for (int i = 0; i < testTime; i++)
@@ -165,8 +165,8 @@ void splitCluster(vector<semanticCluster>&clusters, int maxj)
 //计算路段所属种类
 void getGlobalSemanticType(vector<Edge*> &edges, int k)
 {
-	vector<semanticCluster>clusters;
-	semanticCluster cluster;
+	vector<SemanticCluster>clusters;
+	SemanticCluster cluster;
 	for each (Edge* edge in edges)
 		if (edge&&edge->poiNums.size() >= poiSize)
 			cluster.cluster.push_back(edge);

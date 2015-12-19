@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iterator>
 #include <time.h>
+#include <cmath>
 #include "ReadInTrajs.h"
 #include "../MapLibraries/Map.h"
 #include "TimeSlice.h"
@@ -9,6 +10,7 @@
 #include "Evaluation.h"
 #include "../MapLibraries/json/json.h"
 #include "FineGrainedPattern.h"
+#include "PatternTimeSlot.h"
 //#include "Semantics.h"
 using namespace std;
 
@@ -264,6 +266,7 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 	return ndbcResults;
 }
 
+//把NDBC结果包装成FineGrainedPattern数组，便于后续处理
 list<FineGrainedPattern*> transferNDBCResultToFineGrainedPatterns() {
 	fineGrainedPatterns = list<FineGrainedPattern*>();
 	for each (list<EdgeCluster*> pattern in ndbcResults)
@@ -278,13 +281,95 @@ list<FineGrainedPattern*> transferNDBCResultToFineGrainedPatterns() {
 	}
 }
 
+//对时间进行聚类的辅助函数：计算两个元素的相似度
+int getSimilarity(int obj1, int obj2) {
+	return abs(obj1 - obj2);
+}
+
+//对时间进行聚类的辅助函数：计算时间簇的SSE
+//SSE()
+double calcSSE(SemanticCluster& cluster, Edge*center)
+{
+
+	double SSE = 0;
+	for (auto edge : cluster.cluster)
+	{
+		SSE += getSimilarity(edge, center);
+	}
+	cluster.SSE = SSE;
+	return SSE;
+}
+
+//对时间进行聚类的辅助函数：分裂现有时间聚类
+void splitTimeSlot(vector<PatternTimeSlot>&timeSlots, int maxj)
+{
+	int mj;
+	double minSSE = 1e10, SSE;
+	vector<PatternTimeSlot> a(TIMECLUSTERING_KMEANS_TESTTIME), b(TIMECLUSTERING_KMEANS_TESTTIME);
+	int timeSlotCenter1, timeSlotCenter2;
+	srand(unsigned(time(NULL)));
+	for (int i = 0; i < TIMECLUSTERING_KMEANS_TESTTIME; i++)
+	{
+		int t1 = rand() % timeSlots[maxj].timeStamps.size(), t2 = rand() % timeSlots[maxj].timeStamps.size();
+		while (t1 == t2 || getSimilarity(timeSlots[maxj].timeStamps[t1], timeSlots[maxj].timeStamps[t2]) < eps) {
+			t2 = rand() % timeSlots[maxj].timeStamps.size();
+		}
+		timeSlotCenter1 = timeSlots[maxj].timeStamps[t1];
+		timeSlotCenter2 = timeSlots[maxj].timeStamps[t2];
+		for (int j = 0; j < TIMECLUSTERING_KMEANS_ITERTIME; j++)
+		{
+			a[i].timeStamps.clear();
+			b[i].timeStamps.clear();
+			for (int k = 0; k < timeSlots[maxj].timeStamps.size(); k++) {
+				if (getSimilarity(timeSlots[maxj].timeStamps[k], timeSlotCenter1) < getSimilarity(timeSlots[maxj].timeStamps[k], timeSlotCenter2)) {
+					a[i].InsertPattern(timeSlots[maxj].patterns[k]);
+				}
+				else {
+					b[i].InsertPattern(timeSlots[maxj].patterns[k]);
+				}
+				timeSlotCenter1 = a[i].center;
+				timeSlotCenter2 = b[i].center;
+			}
+		}
+		SSE = calcSSE(a[i], timeSlotCenter1) + calcSSE(b[i], timeSlotCenter2);
+		if (SSE < minSSE) {
+			minSSE = SSE; mj = i;
+		}
+	}
+	timeSlots[maxj] = a[mj];
+	timeSlots.push_back(b[mj]);
+}
+
+//对时间进行聚类
+list<PatternTimeSlot*> getTimeSlots()
+{
+	vector<PatternTimeSlot> timeSlots;
+	PatternTimeSlot initTimeSlot=PatternTimeSlot(fineGrainedPatterns);
+	timeSlots.push_back(initTimeSlot);
+	double maxSSE; int maxj = 0;
+	for (int i = 1; i < TIMECLUSTING_KMEANS_K; ++i)
+	{
+		maxSSE = 0;
+		for (int j = 0; j < timeSlots.size(); ++j)
+			if (timeSlots[j].SSE>maxSSE)
+			{
+				maxSSE = timeSlots[j].SSE; maxj = j;
+			}
+		splitTimeSlot(timeSlots, maxj);
+	}
+	for (int i = 1; i <= TIMECLUSTING_KMEANS_K; ++i) {
+		for (auto edge : timeSlots[i - 1].timeStamps) {
+			//TODO: 分时间片
+		}
+	}
+}
+
+
 int main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork, rootDirectory + semanticRoadFilePath);
-	//poiNums数组归一化
-	poiNumsNormalize(routeNetwork);
 	//检查POI读入正确性使用 
-	//outputSemanticRouteNetwork(routeNetwork, "semanticResultNormalized.txt");
+	//outputSemanticRouteNetworkToPlainText(routeNetwork, "semanticResultNormalized.txt");
 	//建立路网；读入地图匹配结果并构造路段聚类
 	edgeCluster();//读入地图匹配结果并构造路段聚类
 

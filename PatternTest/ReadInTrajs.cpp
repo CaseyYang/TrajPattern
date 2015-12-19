@@ -160,8 +160,11 @@ void generateSemanticRoad(Map&routeNetwork, string filePath) {
 	fin.close();
 }
 
-//输出路段id和poiNum数组到指定文件
-void outputSemanticRouteNetwork(Map&routeNetwork, string filePath) {
+//输出路段的poiNums数组至指定文件
+//文件格式为：
+//第一行：		POI种类名称（逗号分隔）
+//第二行及以后：	路段Id,第一种POI的归一化数量,第二种POI的归一化数量,……最后一种POI的归一化数量,路段所属语义聚类Id（即globalSemanticType）
+void outputSemanticRouteNetworkToPlainText(Map&routeNetwork,string filePath) {
 	ofstream fout(filePath);
 	bool first = true;
 	for each (pair<string, int> category in Edge::poiCategories)
@@ -177,12 +180,11 @@ void outputSemanticRouteNetwork(Map&routeNetwork, string filePath) {
 	fout << endl;
 	for each(Edge* edgePtr in routeNetwork.edges) {
 		if (edgePtr == NULL) continue;
-		//	if (edgePtr->poiNums.size() > 0)continue;
 		fout << edgePtr->id;
 		for each(double num in edgePtr->poiNums) {
 			fout << "," << num;
 		}
-		fout << endl;
+		fout << "," << edgePtr->globalSemanticType << endl;
 	}
 	fout.close();
 }
