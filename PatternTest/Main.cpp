@@ -373,8 +373,36 @@ vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 	return patternTimeSlots;
 }
 
-list<CoarseGrainedPattern*> getCoarseGrainedPatterns() {
+//得到粗粒度轨迹模式的辅助函数：利用Jaccard相似系数判断是否构成粗粒度轨迹模式
+bool isCGPonJaccard(set<int> &set1, set<int> &set2) {
+	set<int> unionResult = set<int>();
+	set_union(set1.begin(), set1.end(), set2.begin(), set2.end(), inserter(unionResult, unionResult.begin()));
+	set<int> intersectionResult = set<int>();
+	set_intersection(set1.begin(), set1.end(), set2.begin(), set2.end(), inserter(intersectionResult, intersectionResult.begin()));
+	double similarity = (intersectionResult.size() + 0.0) / unionResult.size();
+	return similarity >= CGP_MINSIMILARITY;
+}
 
+//得到粗粒度轨迹模式
+list<CoarseGrainedPattern*> getCoarseGrainedPatterns() {
+	ndbcExtensionResults = list<CoarseGrainedPattern*>();
+	for (vector<PatternTimeSlot*>::iterator timeSlotIter = patternTimeSlots.begin(); timeSlotIter < patternTimeSlots.end(); ++timeSlotIter) {
+		for (vector<PatternTimeSlot*>::iterator nextTimeSloterIter = timeSlotIter + 1; nextTimeSloterIter < patternTimeSlots.end(); ++nextTimeSloterIter) {
+			for each (PatternCluster* patternClusterPtr in (*timeSlotIter)->patternClusters)
+			{
+				for each (PatternCluster* anotherPatternClusterPtr in (*nextTimeSloterIter)->patternClusters)
+				{
+					if (isCGPonJaccard(patternClusterPtr->objs, anotherPatternClusterPtr->objs)) {
+						CoarseGrainedPattern* cgpPtr = new CoarseGrainedPattern();
+						cgpPtr->patternClusters.push_back(patternClusterPtr);
+						cgpPtr->patternClusters.push_back(anotherPatternClusterPtr);
+						ndbcExtensionResults.push_back(cgpPtr);
+					}
+				}
+			}
+		}
+	}
+	return ndbcExtensionResults;
 }
 
 int main() {

@@ -5,9 +5,6 @@ FineGrainedPattern::FineGrainedPattern(list<EdgeCluster*> edgeClusters):startTim
 	edgeClusterPattern = edgeClusters;
 	for each (EdgeCluster* edgeClusterPtr in edgeClusters)
 	{
-		for each (int objectId in edgeClusterPtr->clusterObjects)
-		{
-			this->clusterObjects.insert(objectId);
-		}
+		this->clusterObjects.insert(edgeClusterPtr->clusterObjects.begin(), edgeClusterPtr->clusterObjects.end());
 	}
 }
