@@ -145,6 +145,7 @@
     <ClInclude Include="..\MapLibraries\json\json.h" />
     <ClInclude Include="..\MapLibraries\Map.h" />
     <ClInclude Include="Cluster.h" />
+    <ClInclude Include="CoarseGrainedPattern.h" />
     <ClInclude Include="Evaluation.h" />
     <ClInclude Include="FineGrainedPattern.h" />
     <ClInclude Include="Parameters.h" />
@@ -161,6 +162,7 @@
     <ClCompile Include="..\MapLibraries\json\jsoncpp.cpp" />
     <ClCompile Include="..\MapLibraries\Map.cpp" />
     <ClCompile Include="Cluster.cpp" />
+    <ClCompile Include="CoarseGrainedPattern.cpp" />
     <ClCompile Include="EdgeCluster.cpp" />
     <ClCompile Include="Evaluation.cpp" />
     <ClCompile Include="FineGrainedPattern.cpp" />

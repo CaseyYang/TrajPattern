@@ -13,6 +13,7 @@
 #include "FineGrainedPattern.h"
 #include "PatternTimeSlot.h"
 #include "PatternCluster.h"
+#include "CoarseGrainedPattern.h"
 //#include "Semantics.h"
 using namespace std;
 
@@ -24,9 +25,10 @@ string matchedEdgeDirectory = "9daysForTrajPattern\\answer";
 string semanticRoadNetworkJsonFileName = "RouteNetworkData.js";
 Map routeNetwork(rootDirectory + mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
-list<list<EdgeCluster*>> ndbcResults;//NDBC结果
-list<FineGrainedPattern*> fineGrainedPatterns;//细粒度轨迹模式
-list<PatternCluster*> patternClusters;//对细粒度轨迹模式进行时空聚类后的结果
+list<list<EdgeCluster*>> ndbcResults;			//NDBC结果
+list<FineGrainedPattern*> fineGrainedPatterns;	//细粒度轨迹模式
+vector<PatternTimeSlot*> patternTimeSlots;		//时间段集合（包含细粒度轨迹模式聚类）
+list<CoarseGrainedPattern*> ndbcExtensionResults;
 
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
@@ -291,7 +293,7 @@ int getSimilarity(int obj1, int obj2) {
 }
 
 //对时间进行聚类的辅助函数：分裂现有时间聚类
-void splitTimeSlot(vector<PatternTimeSlot>&timeSlots, int maxj)
+void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 {
 	int mj;
 	double minSSE = 1e10, SSE;
@@ -300,22 +302,22 @@ void splitTimeSlot(vector<PatternTimeSlot>&timeSlots, int maxj)
 	srand(unsigned(time(NULL)));
 	for (int i = 0; i < TIMECLUSTERING_KMEANS_TESTTIME; i++)
 	{
-		int t1 = rand() % timeSlots[maxj].timeStamps.size(), t2 = rand() % timeSlots[maxj].timeStamps.size();
-		while (t1 == t2 || getSimilarity(timeSlots[maxj].timeStamps[t1], timeSlots[maxj].timeStamps[t2]) < eps) {
-			t2 = rand() % timeSlots[maxj].timeStamps.size();
+		int t1 = rand() % timeSlots[maxj]->timeStamps.size(), t2 = rand() % timeSlots[maxj]->timeStamps.size();
+		while (t1 == t2 || getSimilarity(timeSlots[maxj]->timeStamps[t1], timeSlots[maxj]->timeStamps[t2]) < eps) {
+			t2 = rand() % timeSlots[maxj]->timeStamps.size();
 		}
-		timeSlotCenter1 = timeSlots[maxj].timeStamps[t1];
-		timeSlotCenter2 = timeSlots[maxj].timeStamps[t2];
+		timeSlotCenter1 = timeSlots[maxj]->timeStamps[t1];
+		timeSlotCenter2 = timeSlots[maxj]->timeStamps[t2];
 		for (int j = 0; j < TIMECLUSTERING_KMEANS_ITERTIME; j++)
 		{
 			a[i].timeStamps.clear();
 			b[i].timeStamps.clear();
-			for (int k = 0; k < timeSlots[maxj].timeStamps.size(); k++) {
-				if (getSimilarity(timeSlots[maxj].timeStamps[k], timeSlotCenter1) < getSimilarity(timeSlots[maxj].timeStamps[k], timeSlotCenter2)) {
-					a[i].insertPattern(timeSlots[maxj].patterns[k]);
+			for (int k = 0; k < timeSlots[maxj]->timeStamps.size(); k++) {
+				if (getSimilarity(timeSlots[maxj]->timeStamps[k], timeSlotCenter1) < getSimilarity(timeSlots[maxj]->timeStamps[k], timeSlotCenter2)) {
+					a[i].insertPattern(timeSlots[maxj]->patterns[k]);
 				}
 				else {
-					b[i].insertPattern(timeSlots[maxj].patterns[k]);
+					b[i].insertPattern(timeSlots[maxj]->patterns[k]);
 				}
 				timeSlotCenter1 = a[i].center;
 				timeSlotCenter2 = b[i].center;
@@ -323,35 +325,37 @@ void splitTimeSlot(vector<PatternTimeSlot>&timeSlots, int maxj)
 		}
 		SSE = a[i].calcSSE() + b[i].calcSSE();
 		if (SSE < minSSE) {
-			minSSE = SSE; mj = i;
+			minSSE = SSE;
+			mj = i;
 		}
 	}
-	timeSlots[maxj] = a[mj];
-	timeSlots.push_back(b[mj]);
+	delete timeSlots[maxj];
+	timeSlots[maxj] = new PatternTimeSlot(a[mj]);
+	timeSlots.push_back(new PatternTimeSlot(b[mj]));
 }
 
 //对细粒度轨迹模式按时间段和语义进行聚类
-list<PatternCluster*> clusterFineGrainedPatterns()
+vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 {
 	//首先按时间段进行聚类
-	vector<PatternTimeSlot> timeSlots;
-	PatternTimeSlot initTimeSlot=PatternTimeSlot(fineGrainedPatterns);
-	timeSlots.push_back(initTimeSlot);
+	patternTimeSlots = vector<PatternTimeSlot*>();
+	PatternTimeSlot* initTimeSlot = new PatternTimeSlot(fineGrainedPatterns);
+	patternTimeSlots.push_back(initTimeSlot);
 	double maxSSE; int maxj = 0;
 	for (int i = 1; i < TIMECLUSTING_KMEANS_K; ++i)
 	{
 		maxSSE = 0;
-		for (int j = 0; j < timeSlots.size(); ++j)
-			if (timeSlots[j].SSE>maxSSE)
+		for (int j = 0; j < patternTimeSlots.size(); ++j)
+			if (patternTimeSlots[j]->SSE>maxSSE)
 			{
-				maxSSE = timeSlots[j].SSE; maxj = j;
+				maxSSE = patternTimeSlots[j]->SSE; maxj = j;
 			}
-		splitTimeSlot(timeSlots, maxj);
+		splitTimeSlot(patternTimeSlots, maxj);
 	}
 	//然后按语义进行聚类
-	map<int, PatternCluster*> semanticTypePatternClusterMap = map<int, PatternCluster*>();
 	for (int i = 1; i <= TIMECLUSTING_KMEANS_K; ++i) {
-		for (FineGrainedPattern* pattern : timeSlots[i - 1].patterns) {
+		map<int, PatternCluster*> semanticTypePatternClusterMap = map<int, PatternCluster*>();
+		for (FineGrainedPattern* pattern : patternTimeSlots[i - 1]->patterns) {
 			for each (EdgeCluster* edgeCluster in pattern->edgeClusterPattern)
 			{
 				PatternCluster* patternCluster = NULL;
@@ -360,15 +364,18 @@ list<PatternCluster*> clusterFineGrainedPatterns()
 					patternCluster = new PatternCluster();
 					patternCluster->semanticType = semanticType;
 					semanticTypePatternClusterMap[semanticType] = patternCluster;
-					patternClusters.push_back(patternCluster);
+					patternTimeSlots[i - 1]->patternClusters.push_back(patternCluster);
 				}
 				semanticTypePatternClusterMap[semanticType]->insertPattern(pattern);
 			}
 		}
 	}
-	return patternClusters;
+	return patternTimeSlots;
 }
 
+list<CoarseGrainedPattern*> getCoarseGrainedPatterns() {
+
+}
 
 int main() {
 	//读入POI分布文件，填充poiNums数组
@@ -388,6 +395,7 @@ int main() {
 	//NDBC扩展
 	transferNDBCResultToFineGrainedPatterns();
 	clusterFineGrainedPatterns();
+
 
 
 	////评估路段序列
