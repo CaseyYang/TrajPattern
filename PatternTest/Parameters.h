@@ -1,9 +1,9 @@
 #pragma once
 
 //NDBC工作所用到的参数
-#define DE_DURATIVE 15 //序列最短长度
+#define DE_DURATIVE 10 //序列最短长度
 #define DE_MINSIMILARITY 0.5 //序列扩展条件：交集元素与并集元素之比
-#define DE_MINOBJECTS 20 //路段聚类最少包含的轨迹数
+#define DE_MINOBJECTS 10 //路段聚类最少包含的轨迹数
 
 //NDBC扩展所用到的参数
 #define TIMECLUSTING_KMEANS_K 5 //时段聚类数量

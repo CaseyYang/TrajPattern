@@ -14,14 +14,15 @@
 #include "PatternTimeSlot.h"
 #include "PatternCluster.h"
 #include "CoarseGrainedPattern.h"
-//#include "Semantics.h"
 using namespace std;
 
 string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";
-string mapDirectory = "新加坡轨迹数据\\";
+//string rootDirectory = "I:\\YangKaixi\\MapMatchingProject\\MapMatchingProject\\Data\\";
+string mapDirectory = "新加坡路网\\";
 string semanticRoadFilePath = "NDBC扩展\\semanticRoad.txt";
 string trajInputDirectory = "9daysForTrajPattern\\input";
-string matchedEdgeDirectory = "9daysForTrajPattern\\answer";
+string matchedEdgeDirectory = "day1\\day1_splited_120s_answer";
+string mergedMatchedEdgeFile = "I:\\YangKaixi\\MapMatchingProject\\MapMatchingProject\\Data\\9daysForTrajPattern\\result.txt";
 string semanticRoadNetworkJsonFileName = "RouteNetworkData.js";
 Map routeNetwork(rootDirectory + mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
@@ -69,8 +70,12 @@ void edgeCluster() {
 	for (int timeStamp = 0; timeStamp < 1440; timeStamp++) {
 		timeSlices.at(timeStamp) = new NewTimeSlice(timeStamp);
 	}
-	scanMapMatchingResultFolder(rootDirectory + mapDirectory, matchedEdgeDirectory, timeSlices, routeNetwork);//读入地图匹配结果文件，填充时间片和路段聚类
-	cout << "读入所有地图匹配结果" << endl;
+	clock_t start, finish;
+	start = clock();
+	readMergedMapMatchingResult(mergedMatchedEdgeFile, timeSlices, routeNetwork);
+	//scanMapMatchingResultFolder(rootDirectory, matchedEdgeDirectory, timeSlices, routeNetwork);//读入地图匹配结果文件，填充时间片和路段聚类
+	finish = clock();
+	cout << "读入所有地图匹配结果！用时" << finish - start << "毫秒" << endl;
 	for (auto timeSlice : timeSlices)
 	{
 		for (auto edgeCluster : timeSlice->clusters) {
@@ -285,6 +290,7 @@ list<FineGrainedPattern*> transferNDBCResultToFineGrainedPatterns() {
 		FineGrainedPattern* fineGrainedPatternPtr = new FineGrainedPattern(pattern);
 		fineGrainedPatterns.push_back(fineGrainedPatternPtr);
 	}
+	return fineGrainedPatterns;
 }
 
 //对时间进行聚类的辅助函数：计算两个元素的相似度
@@ -304,6 +310,7 @@ void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 	{
 		int t1 = rand() % timeSlots[maxj]->timeStamps.size(), t2 = rand() % timeSlots[maxj]->timeStamps.size();
 		while (t1 == t2 || getSimilarity(timeSlots[maxj]->timeStamps[t1], timeSlots[maxj]->timeStamps[t2]) < eps) {
+			t1 = rand() % timeSlots[maxj]->timeStamps.size();
 			t2 = rand() % timeSlots[maxj]->timeStamps.size();
 		}
 		timeSlotCenter1 = timeSlots[maxj]->timeStamps[t1];
@@ -340,6 +347,7 @@ vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 	//首先按时间段进行聚类
 	patternTimeSlots = vector<PatternTimeSlot*>();
 	PatternTimeSlot* initTimeSlot = new PatternTimeSlot(fineGrainedPatterns);
+	initTimeSlot->outputTimeStamps("timeStamps.txt");
 	patternTimeSlots.push_back(initTimeSlot);
 	double maxSSE; int maxj = 0;
 	for (int i = 1; i < TIMECLUSTING_KMEANS_K; ++i)
@@ -348,7 +356,8 @@ vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 		for (int j = 0; j < patternTimeSlots.size(); ++j)
 			if (patternTimeSlots[j]->SSE>maxSSE)
 			{
-				maxSSE = patternTimeSlots[j]->SSE; maxj = j;
+				maxSSE = patternTimeSlots[j]->SSE; 
+				maxj = j;
 			}
 		splitTimeSlot(patternTimeSlots, maxj);
 	}
@@ -418,13 +427,15 @@ int main() {
 	start = clock();
 	methodWithKPruningAndMoreInfo();
 	finish = clock();
-	cout << "用时：" << finish - start << "毫秒" << endl;
+	cout << "细粒度轨迹模式挖掘完成！用时：" << finish - start << "毫秒" << endl;
 
 	//NDBC扩展
 	transferNDBCResultToFineGrainedPatterns();
+	start = clock();
 	clusterFineGrainedPatterns();
-
-
+	getCoarseGrainedPatterns();
+	finish = clock();
+	cout << "粗粒度轨迹模式挖掘完成！用时：" << finish - start << "毫秒" << endl;
 
 	////评估路段序列
 	//cout << "共得到" << ndbcResults.size() << "个模式序列" << endl;

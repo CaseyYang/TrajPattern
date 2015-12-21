@@ -13,14 +13,14 @@ PatternTimeSlot::PatternTimeSlot(list<FineGrainedPattern*>&patterns) : patterns(
 		timeStamps.push_back(avg);
 		total += avg;
 	}
-	center = total / timeStamps.size();
+	center = total / static_cast<int>(timeStamps.size());
 }
 
 void PatternTimeSlot::insertPattern(FineGrainedPattern* pattern) {
 	patterns.push_back(pattern);
 	int avg = (pattern->startTime + pattern->endTime) / 2;
 	timeStamps.push_back(avg);
-	center = (center*(timeStamps.size() - 1) + avg) / timeStamps.size();
+	center = (center*(static_cast<int>(timeStamps.size()) - 1) + avg) / static_cast<int>(timeStamps.size());
 }
 
 double PatternTimeSlot::calcSSE() {
@@ -30,6 +30,15 @@ double PatternTimeSlot::calcSSE() {
 		this->SSE += pow(timeStamp - center, 2);
 	}
 	return this->SSE;
+}
+
+void PatternTimeSlot::outputTimeStamps(string filePath) {
+	ofstream fout(filePath);
+	for each (int timeStamp in this->timeStamps)
+	{
+		fout << timeStamp << endl;
+	}
+	fout.close();
 }
 
 PatternTimeSlot::~PatternTimeSlot()
