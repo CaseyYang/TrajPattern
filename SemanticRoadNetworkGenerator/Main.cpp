@@ -6,7 +6,7 @@
 using namespace std;
 
 string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";
-string mapDirectory = "新加坡轨迹数据\\";
+string mapDirectory = "新加坡路网\\";
 string poiFilePath = "NDBC扩展\\poi.csv";
 string semanticRoadFilePath = "semanticRoad.txt";
 double neighborRange = 200.0;
@@ -218,15 +218,15 @@ void getGlobalSemanticType(vector<Edge*> &edges, int k)
 
 void main() {
 	generateSemanticRouteNetwork();
-	poiNumsNormalize();/*
+	poiNumsNormalize();
 	out.open("cout.txt");
 	os.open("count.txt");
-	for (int i = 10; i <= 20; i += 1)
+	for (int i = 17; i <= 20; i += 1)
 	{
 		//计算路段所属种类
 		getGlobalSemanticType(routeNetwork.edges, i);
 	}
-	os.close(); out.close();*/
-	getGlobalSemanticType(routeNetwork.edges, KMEANS_K);
+	os.close(); out.close();
+//	getGlobalSemanticType(routeNetwork.edges, KMEANS_K);
 	outputSemanticRouteNetwork(semanticRoadFilePath);
 }
