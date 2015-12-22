@@ -194,7 +194,11 @@ void generateSemanticRoad(Map&routeNetwork, string filePath) {
 			(*edgeIter)->globalSemanticType = curNum;
 		}
 		++edgeIter;
-		while (*edgeIter == NULL) ++edgeIter;
+		if (edgeIter == routeNetwork.edges.end()) break;
+		while (*edgeIter == NULL) {
+			++edgeIter;
+			if (edgeIter == routeNetwork.edges.end()) break;
+		}
 	}
 	fin.close();
 }

@@ -23,7 +23,7 @@ string semanticRoadFilePath = "NDBC扩展\\semanticRoad.txt";
 string trajInputDirectory = "9daysForTrajPattern\\input";
 string matchedEdgeDirectory = "day1\\day1_splited_120s_answer";
 //string mergedMatchedEdgeFile = "I:\\YangKaixi\\MapMatchingProject\\MapMatchingProject\\Data\\9daysForTrajPattern\\result.txt";//9天
-string mergedMatchedEdgeFile = "I:\\YangKaixi\\MapMatchingProject\\MapMatchingProject\\Data\\day1\\result.txt";//1天
+string mergedMatchedEdgeFile = "I:\\YangKaixi\\MapMatchingProject\\MapMatchingProject\\Data\\day1\\20090214_matchedEdge.txt";//1天
 string semanticRoadNetworkJsonFileName = "RouteNetworkData.js";
 Map routeNetwork(rootDirectory + mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
@@ -329,9 +329,9 @@ void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 				else {
 					b[i].insertPattern(timeSlots[maxj]->patterns[k]);
 				}
-				timeSlotCenter1 = a[i].center;
-				timeSlotCenter2 = b[i].center;
 			}
+			timeSlotCenter1 = a[i].center;
+			timeSlotCenter2 = b[i].center;
 			fout << a[i].timeStamps.size() << " " << a[i].center << " " << b[i].timeStamps.size() << " " << b[i].center << endl;
 		}
 		fout << endl;
@@ -444,6 +444,7 @@ int main() {
 	getCoarseGrainedPatterns();
 	finish = clock();
 	cout << "粗粒度轨迹模式挖掘完成！用时：" << finish - start << "毫秒" << endl;
+	system("pause");
 
 	////评估路段序列
 	//cout << "共得到" << ndbcResults.size() << "个模式序列" << endl;
