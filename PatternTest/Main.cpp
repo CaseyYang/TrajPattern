@@ -22,7 +22,8 @@ string mapDirectory = "新加坡路网\\";
 string semanticRoadFilePath = "NDBC扩展\\semanticRoad.txt";
 string trajInputDirectory = "9daysForTrajPattern\\input";
 string matchedEdgeDirectory = "day1\\day1_splited_120s_answer";
-string mergedMatchedEdgeFile = "I:\\YangKaixi\\MapMatchingProject\\MapMatchingProject\\Data\\9daysForTrajPattern\\result.txt";
+//string mergedMatchedEdgeFile = "I:\\YangKaixi\\MapMatchingProject\\MapMatchingProject\\Data\\9daysForTrajPattern\\result.txt";//9天
+string mergedMatchedEdgeFile = "I:\\YangKaixi\\MapMatchingProject\\MapMatchingProject\\Data\\day1\\result.txt";//1天
 string semanticRoadNetworkJsonFileName = "RouteNetworkData.js";
 Map routeNetwork(rootDirectory + mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
@@ -301,6 +302,7 @@ int getSimilarity(int obj1, int obj2) {
 //对时间进行聚类的辅助函数：分裂现有时间聚类
 void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 {
+	ofstream fout("debugSplitTimeSlot.txt");
 	int mj;
 	double minSSE = 1e10, SSE;
 	vector<PatternTimeSlot> a(TIMECLUSTERING_KMEANS_TESTTIME), b(TIMECLUSTERING_KMEANS_TESTTIME);
@@ -315,6 +317,7 @@ void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 		}
 		timeSlotCenter1 = timeSlots[maxj]->timeStamps[t1];
 		timeSlotCenter2 = timeSlots[maxj]->timeStamps[t2];
+		fout << t1 << " " << timeSlotCenter1 << " " << t2 << " " << timeSlotCenter2 << endl;
 		for (int j = 0; j < TIMECLUSTERING_KMEANS_ITERTIME; j++)
 		{
 			a[i].timeStamps.clear();
@@ -329,13 +332,16 @@ void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 				timeSlotCenter1 = a[i].center;
 				timeSlotCenter2 = b[i].center;
 			}
+			fout << a[i].timeStamps.size() << " " << a[i].center << " " << b[i].timeStamps.size() << " " << b[i].center << endl;
 		}
+		fout << endl;
 		SSE = a[i].calcSSE() + b[i].calcSSE();
 		if (SSE < minSSE) {
 			minSSE = SSE;
 			mj = i;
 		}
 	}
+	fout.close();
 	delete timeSlots[maxj];
 	timeSlots[maxj] = new PatternTimeSlot(a[mj]);
 	timeSlots.push_back(new PatternTimeSlot(b[mj]));
@@ -353,12 +359,13 @@ vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 	for (int i = 1; i < TIMECLUSTING_KMEANS_K; ++i)
 	{
 		maxSSE = 0;
-		for (int j = 0; j < patternTimeSlots.size(); ++j)
-			if (patternTimeSlots[j]->SSE>maxSSE)
+		for (int j = 0; j < patternTimeSlots.size(); ++j) {
+			if (patternTimeSlots[j]->SSE > maxSSE)
 			{
-				maxSSE = patternTimeSlots[j]->SSE; 
+				maxSSE = patternTimeSlots[j]->SSE;
 				maxj = j;
 			}
+		}
 		splitTimeSlot(patternTimeSlots, maxj);
 	}
 	//然后按语义进行聚类
@@ -425,7 +432,8 @@ int main() {
 	//挖掘路段序列
 	clock_t start, finish;
 	start = clock();
-	methodWithKPruningAndMoreInfo();
+	//methodWithKPruning();
+	ndbcResults = methodWithKPruningAndMoreInfo();
 	finish = clock();
 	cout << "细粒度轨迹模式挖掘完成！用时：" << finish - start << "毫秒" << endl;
 
