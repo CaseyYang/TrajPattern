@@ -12,16 +12,22 @@
 using namespace std;
 
 string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";
-string mapDirectory = "新加坡轨迹数据\\";
+string mapDirectory = "新加坡路网\\";
 string semanticRoadFilePath = "NDBC扩展\\semanticRoad.txt";
 string trajInputDirectory = "9daysForTrajPattern\\input";
 string matchedEdgeDirectory = "9daysForTrajPattern\\answer";
+string trajectoryPath = "matchedEdge.txt";
 Map routeNetwork(rootDirectory+mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> resultsList;//结果
 double semanticThreshold=0.95;
 int MinPts = 60;
 ofstream os;
+struct OD {
+	set<int>originEdges;
+	set<int>destEdges;
+};
+map<pair<int, int>, OD>mp;
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
 vector<TimeSlice*> clusterDemo() {
@@ -437,11 +443,18 @@ void outputJson()
 //	system("pause");
 //	return 0;
 //}
+void readODTrajectory(string inPath)
+{
+	ifstream fin(inPath);
+	while (fin>>)
+	{
 
+	}
+}
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
-
+	readODTrajectory(trajectoryPath);
 
 
 
