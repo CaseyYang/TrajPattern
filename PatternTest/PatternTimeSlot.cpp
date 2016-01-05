@@ -32,6 +32,15 @@ double PatternTimeSlot::calcSSE() {
 	return this->SSE;
 }
 
+void PatternTimeSlot::clear()
+{
+	patterns.clear();
+	timeStamps.clear();
+	patternClusters.clear();
+	center = 0;
+	SSE = 0;
+}
+
 void PatternTimeSlot::outputTimeStamps(string filePath) {
 	ofstream fout(filePath);
 	for each (int timeStamp in this->timeStamps)

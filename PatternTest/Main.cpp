@@ -302,7 +302,7 @@ int getSimilarity(int obj1, int obj2) {
 //对时间进行聚类的辅助函数：分裂现有时间聚类
 void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 {
-	ofstream fout("debugSplitTimeSlot.txt");
+	//ofstream fout("debugSplitTimeSlot.txt");
 	int mj;
 	double minSSE = 1e10, SSE;
 	vector<PatternTimeSlot> a(TIMECLUSTERING_KMEANS_TESTTIME), b(TIMECLUSTERING_KMEANS_TESTTIME);
@@ -317,11 +317,11 @@ void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 		}
 		timeSlotCenter1 = timeSlots[maxj]->timeStamps[t1];
 		timeSlotCenter2 = timeSlots[maxj]->timeStamps[t2];
-		fout << t1 << " " << timeSlotCenter1 << " " << t2 << " " << timeSlotCenter2 << endl;
+		//fout << t1 << " " << timeSlotCenter1 << " " << t2 << " " << timeSlotCenter2 << endl;
 		for (int j = 0; j < TIMECLUSTERING_KMEANS_ITERTIME; j++)
 		{
-			a[i].timeStamps.clear();
-			b[i].timeStamps.clear();
+			a[i].clear();
+			b[i].clear();
 			for (int k = 0; k < timeSlots[maxj]->timeStamps.size(); k++) {
 				if (getSimilarity(timeSlots[maxj]->timeStamps[k], timeSlotCenter1) < getSimilarity(timeSlots[maxj]->timeStamps[k], timeSlotCenter2)) {
 					a[i].insertPattern(timeSlots[maxj]->patterns[k]);
@@ -332,16 +332,16 @@ void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 			}
 			timeSlotCenter1 = a[i].center;
 			timeSlotCenter2 = b[i].center;
-			fout << a[i].timeStamps.size() << " " << a[i].center << " " << b[i].timeStamps.size() << " " << b[i].center << endl;
+			//fout << a[i].timeStamps.size() << " " << a[i].center << " " << b[i].timeStamps.size() << " " << b[i].center << endl;
 		}
-		fout << endl;
+		//fout << endl;
 		SSE = a[i].calcSSE() + b[i].calcSSE();
 		if (SSE < minSSE) {
 			minSSE = SSE;
 			mj = i;
 		}
 	}
-	fout.close();
+	//fout.close();
 	delete timeSlots[maxj];
 	timeSlots[maxj] = new PatternTimeSlot(a[mj]);
 	timeSlots.push_back(new PatternTimeSlot(b[mj]));
@@ -353,7 +353,7 @@ vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 	//首先按时间段进行聚类
 	patternTimeSlots = vector<PatternTimeSlot*>();
 	PatternTimeSlot* initTimeSlot = new PatternTimeSlot(fineGrainedPatterns);
-	initTimeSlot->outputTimeStamps("timeStamps.txt");
+	//initTimeSlot->outputTimeStamps("timeStamps.txt");
 	patternTimeSlots.push_back(initTimeSlot);
 	double maxSSE; int maxj = 0;
 	for (int i = 1; i < TIMECLUSTING_KMEANS_K; ++i)
@@ -399,19 +399,34 @@ bool isCGPonJaccard(set<int> &set1, set<int> &set2) {
 	return similarity >= CGP_MINSIMILARITY;
 }
 
+//得到粗粒度轨迹模式的辅助函数：利用最小相似度判断是否构成粗粒度轨迹模式
+bool isPattern(set<int> &set1, set<int> &set2, set<int> &result) {
+	set_intersection(set1.begin(), set1.end(), set2.begin(), set2.end(), inserter(result, result.begin()));
+	return result.size() >= CGP_MINSUPPORT;
+}
+
 //得到粗粒度轨迹模式
 list<CoarseGrainedPattern*> getCoarseGrainedPatterns() {
 	ndbcExtensionResults = list<CoarseGrainedPattern*>();
+	list<CoarseGrainedPattern*> canadidates = list<CoarseGrainedPattern*>();
 	for (vector<PatternTimeSlot*>::iterator timeSlotIter = patternTimeSlots.begin(); timeSlotIter < patternTimeSlots.end(); ++timeSlotIter) {
+		//for each(CoarseGrainedPattern* canadidate in canadidates) {
+		//	if(isCGPonJaccard(canadidate->patternClusters->objs, anotherPatternClusterPtr->objs))
+		//}
+		//方法一
 		for (vector<PatternTimeSlot*>::iterator nextTimeSloterIter = timeSlotIter + 1; nextTimeSloterIter < patternTimeSlots.end(); ++nextTimeSloterIter) {
 			for each (PatternCluster* patternClusterPtr in (*timeSlotIter)->patternClusters)
 			{
 				for each (PatternCluster* anotherPatternClusterPtr in (*nextTimeSloterIter)->patternClusters)
 				{
-					if (isCGPonJaccard(patternClusterPtr->objs, anotherPatternClusterPtr->objs)) {
+					if (patternClusterPtr->semanticType == anotherPatternClusterPtr->semanticType) continue;
+					set<int> intersectionResult = set<int>();
+					if (isPattern(patternClusterPtr->objs, anotherPatternClusterPtr->objs, intersectionResult)) {
+						PatternCluster* clrPatternClusterPtr1 = new PatternCluster(*patternClusterPtr, intersectionResult);
+						PatternCluster* clrPatternClusterPtr2 = new PatternCluster(*anotherPatternClusterPtr, intersectionResult);
 						CoarseGrainedPattern* cgpPtr = new CoarseGrainedPattern();
-						cgpPtr->patternClusters.push_back(patternClusterPtr);
-						cgpPtr->patternClusters.push_back(anotherPatternClusterPtr);
+						cgpPtr->patternClusters.push_back(clrPatternClusterPtr1);
+						cgpPtr->patternClusters.push_back(clrPatternClusterPtr2);
 						ndbcExtensionResults.push_back(cgpPtr);
 					}
 				}
