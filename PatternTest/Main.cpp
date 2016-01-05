@@ -27,6 +27,7 @@ struct OD {
 	set<int>originEdges;
 	set<int>destEdges;
 };
+typedef pair<pair<int, int>, OD>PAIR;
 map<pair<int, int>, OD>mp;
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
@@ -446,24 +447,45 @@ void outputJson()
 void readODTrajectory(string inPath)
 {
 	ifstream fin(inPath);
-	int time, firstEdge, edge; double tmp; 
+	int time, firstEdge, edge; double tmp; bool first = true;
 	while (fin>>time)
 	{
-		
 		if (time==-1)
 		{ 
-
-			if(!eof)fin >> time >> firstEdge >> tmp;
+			if (!first)
+			{
+				if (edge != -1 && firstEdge != -1)
+				{
+					mp[make_pair(routeNetwork.edges[firstEdge]->globalSemanticType, routeNetwork.edges[edge]->globalSemanticType)].originEdges.insert(firstEdge);
+					mp[make_pair(routeNetwork.edges[firstEdge]->globalSemanticType, routeNetwork.edges[edge]->globalSemanticType)].destEdges.insert(edge);
+				}
+			}
+			else first = false;
+			fin >> time >> "," >> firstEdge >> "," >> tmp;
+			edge = -1;
 		}
 		else fin >> "," >> edge >> "," >> tmp;
-
 	}
+	if (edge != -1 && firstEdge != -1)
+	{
+		mp[make_pair(routeNetwork.edges[firstEdge]->globalSemanticType, routeNetwork.edges[edge]->globalSemanticType)].originEdges.insert(firstEdge);
+		mp[make_pair(routeNetwork.edges[firstEdge]->globalSemanticType, routeNetwork.edges[edge]->globalSemanticType)].destEdges.insert(edge);
+	}
+}
+bool cmp(const PAIR&lhs, const PAIR&rhs)
+{
+	return lhs.second.destEdges.size() > rhs.second.destEdges.size();
 }
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
 	readODTrajectory(trajectoryPath);
-
+	vector<PAIR>pairs(mp.begin(), mp.end());
+	sort(pairs.begin(), pairs.end(), cmp);
+	for (int i = 0; i < 50; i++)
+	{
+		cout << pairs[i].first.first << ' ' << pairs[i].first.second <<' '<<pairs[i].second.destEdges.size()<< endl;
+	}
 
 
 
