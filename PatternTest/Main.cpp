@@ -447,7 +447,7 @@ void outputJson()
 void readODTrajectory(string inPath)
 {
 	ifstream fin(inPath);
-	int time, firstEdge, edge; double tmp; bool first = true;
+	int time, firstEdge, edge; double tmp; bool first = true; char useless;
 	while (fin>>time)
 	{
 		if (time==-1)
@@ -461,10 +461,10 @@ void readODTrajectory(string inPath)
 				}
 			}
 			else first = false;
-			fin >> time >> "," >> firstEdge >> "," >> tmp;
+			fin >> time >> useless >> firstEdge >> useless >> tmp;
 			edge = -1;
 		}
-		else fin >> "," >> edge >> "," >> tmp;
+		else fin >> useless >> edge >> useless >> tmp;
 	}
 	if (edge != -1 && firstEdge != -1)
 	{
