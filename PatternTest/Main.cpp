@@ -441,15 +441,13 @@ void outputJson()
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
+
+
+
+
+
+
 	/*
-	double tot = 0;
-	for each (Edge* edge in routeNetwork.edges)
-		if (edge)
-		for (double c : edge->poiNums)
-			tot += c;
-	cout << tot << endl;
-	*/
-	
 	os.open("count.txt");
 	//poiNums数组归一化
 	poiNumsNormalize(routeNetwork);
@@ -463,7 +461,7 @@ void main() {
 		getGlobalSemanticType(routeNetwork);
 	//	break;
 	}
-	os.close();
+	os.close();*/
 	//outputJson();
 	//检查POI读入正确性使用 
 //	outputSemanticRouteNetwork(routeNetwork, "semanticResultNormalized.txt");
