@@ -143,6 +143,8 @@
     <ClInclude Include="..\MapLibraries\Map.h" />
     <ClInclude Include="Cluster.h" />
     <ClInclude Include="Evaluation.h" />
+    <ClInclude Include="json\json-forwards.h" />
+    <ClInclude Include="json\json.h" />
     <ClInclude Include="Parameters.h" />
     <ClInclude Include="EdgeCluster.h" />
     <ClInclude Include="NewTimeSlice.h" />
@@ -156,6 +158,7 @@
     <ClCompile Include="Cluster.cpp" />
     <ClCompile Include="EdgeCluster.cpp" />
     <ClCompile Include="Evaluation.cpp" />
+    <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="NewTimeSlice.cpp" />
     <ClCompile Include="ReadInTrajs.cpp" />
     <ClCompile Include="TimeSlice.cpp" />
