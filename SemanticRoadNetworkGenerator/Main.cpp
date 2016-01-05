@@ -164,9 +164,9 @@ void splitCluster(vector<SemanticCluster>&clusters, int maxj)
 					a[i].cluster.push_back(clusters[maxj].cluster[k]);
 				else b[i].cluster.push_back(clusters[maxj].cluster[k]);
 				center1 = calcCenter(a[i].cluster); center2 = calcCenter(b[i].cluster);
-				//			out << a[i].cluster.size() << ' ' << b[i].cluster.size() << ' ' << calcSSE(a[i], center1) << ' ' << calcSSE(b[i], center2) << endl;
+//			out << a[i].cluster.size() << ' ' << b[i].cluster.size() << ' ' << calcSSE(a[i], center1) << ' ' << calcSSE(b[i], center2) << endl;
 		}
-		//		out << endl;
+//		out << endl;
 		SSE = calcSSE(a[i], center1) + calcSSE(b[i], center2);
 		if (SSE < minSSE) { minSSE = SSE; mj = i; }
 	}
@@ -202,7 +202,7 @@ void getGlobalSemanticType(vector<Edge*> &edges, int k)
 		for (auto edge : clusters[i - 1].cluster)
 			edge->globalSemanticType = i;
 	os << "count=" << k << endl;
-	//	out << "count=" << k << endl;
+//	out << "count=" << k << endl;
 	for (int i = -1; i <= k; i++)
 	{
 		int tot = 0;
@@ -217,17 +217,17 @@ void getGlobalSemanticType(vector<Edge*> &edges, int k)
 
 void main() {
 	generateSemanticRouteNetwork();
-	poiNumsNormalize();/*
-	out.open("cout.txt");*/
+	poiNumsNormalize();
+//	out.open("cout.txt");
 	os.open("count.txt");
-	/*
-	for (int i = 10; i <= 20; i += 1)
+	/*for (int i = 17; i <= 20; i += 1)
 	{
 		//计算路段所属种类
 		getGlobalSemanticType(routeNetwork.edges, i);
-	}
-	out.close();*/
+	}*/ //out.close();
 	getGlobalSemanticType(routeNetwork.edges, KMEANS_K);
 	outputSemanticRouteNetwork(semanticRoadFilePath);
 	os.close();
+
+
 }
