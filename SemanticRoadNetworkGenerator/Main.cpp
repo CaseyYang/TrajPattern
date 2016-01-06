@@ -9,7 +9,7 @@ string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";
 string mapDirectory = "新加坡路网\\";
 string poiFilePath = "NDBC扩展\\poi.csv";
 string semanticRoadFilePath = "semanticRoad.txt";
-double neighborRange = 500.0;
+double neighborRange = 200.0;
 int KMEANS_K = 15;
 Map routeNetwork(rootDirectory + mapDirectory, 500);
 map<string, int> categories;

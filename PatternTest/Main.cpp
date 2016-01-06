@@ -436,6 +436,14 @@ list<CoarseGrainedPattern*> getCoarseGrainedPatterns() {
 	return ndbcExtensionResults;
 }
 
+//实验统计部分
+void outputCGP() {
+	for each (auto CGP in ndbcExtensionResults)
+	{
+		CGP->outputCGP();
+	}
+}
+
 int main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork, rootDirectory + semanticRoadFilePath);
@@ -459,7 +467,11 @@ int main() {
 	getCoarseGrainedPatterns();
 	finish = clock();
 	cout << "粗粒度轨迹模式挖掘完成！用时：" << finish - start << "毫秒" << endl;
-	system("pause");
+	cout << "结果数量：" << ndbcExtensionResults.size() << endl;
+	
+	//NDBC扩展统计
+	outputCGP();
+	cin >> start;
 
 	////评估路段序列
 	//cout << "共得到" << ndbcResults.size() << "个模式序列" << endl;
