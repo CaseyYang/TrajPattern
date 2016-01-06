@@ -11,4 +11,4 @@
 #define TIMECLUSTERING_KMEANS_TESTTIME 20 //KMEANS随机选择初始点的次数
 
 #define CGP_MINSIMILARITY 0.5 //粗粒度轨迹模式最小相似度
-#define CGP_MINSUPPORT 10//粗粒度轨迹模式最小支持度
+#define CGP_MINSUPPORT 1//粗粒度轨迹模式最小支持度

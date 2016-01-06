@@ -470,7 +470,8 @@ int main() {
 	cout << "结果数量：" << ndbcExtensionResults.size() << endl;
 	
 	//NDBC扩展统计
-	outputCGP();
+	//outputCGP();
+	
 	cin >> start;
 
 	////评估路段序列
