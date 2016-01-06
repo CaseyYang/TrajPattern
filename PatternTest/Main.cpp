@@ -12,7 +12,7 @@
 using namespace std;
 
 string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";
-string mapDirectory = "新加坡轨迹数据\\";
+string mapDirectory = "新加坡路网\\";
 string semanticRoadFilePath = "NDBC扩展\\semanticRoad.txt";
 string trajInputDirectory = "9daysForTrajPattern\\input";
 string matchedEdgeDirectory = "9daysForTrajPattern\\answer";
@@ -387,7 +387,7 @@ void getGlobalSemanticType(vector<Edge*> &edges, int k)
 }
 
 //输出路网及语义聚类信息至指定js文件
-void outputSemanticRouteNetworkToJson(string fileName)
+void outputSemanticRouteNetworkToJson(string fileName, set<int>&st)
 {
 	//根节点
 	Json::Value root;
@@ -395,7 +395,7 @@ void outputSemanticRouteNetworkToJson(string fileName)
 	root["city"] = Json::Value("Singapore");
 	Json::StyledWriter sw;
 	for each (Edge* edge in routeNetwork.edges)
-		if (edge != NULL)
+		if (edge != NULL && st.find(edge->id) != st.end())
 		{
 			Json::Value partner;
 			//子节点属性
@@ -450,20 +450,81 @@ void outputSemanticRouteNetworkToJson(string fileName)
 //	system("pause");
 //	return 0;
 //}
+void outputJson(string input)
+{
+	//根节点
+	Json::Value root;
+	//根节点属性
+	root["city"] = Json::Value("Singapore");
+	Json::StyledWriter sw;
+	ifstream is;
+	is.open(input);
+	int edge, type = 1;
+	set<int>st;
+	string output = input.replace(input.size() - 3, 3, "js");
+	while (is >> edge)
+	{
+		if (edge == -1)type = 2;
+		else {
+			Json::Value partner;
+			//子节点属性
+			partner["edgeId"] = Json::Value(routeNetwork.edges[edge]->id);
+			partner["numOfFigures"] = Json::Value(routeNetwork.edges[edge]->figure->size());
+			for each(auto f in *routeNetwork.edges[edge]->figure)
+			{
+				Json::Value figure;
+				//cout << f->lat << ' ' << f->lon << endl;
+				figure["x"] = Json::Value(f->lon);
+				figure["y"] = Json::Value(f->lat);
+				partner["figures"].append(Json::Value(figure));
+			}
+			partner["localSemanticType"] = Json::Value(type);
+			//cout << sw.write(partner);
+			root["edges"].append(Json::Value(partner));
+			
+		}
+	}
+	ofstream os;
+	os.open(output);
+	os << "routeNetwork =" << endl;
+	os << sw.write(root);
+	os.close();
 
+}
+void  openFileFolder(string rootPath)
+{
+	string completeInputFilesPath = rootPath+"*.txt";
+	const char* dir = completeInputFilesPath.c_str();
+	_finddata_t fileInfo;//文件信息
+	intptr_t lf;//文件句柄
+	if ((lf = _findfirst(dir, &fileInfo)) == -1l) {
+		return;
+	}
+	else {
+		int trajIndex = 0;
+		do {
+			string inputFileName = fileInfo.name;
+			outputJson(rootPath+inputFileName);
+		} while (_findnext(lf, &fileInfo) == 0);
+		_findclose(lf);
+		return;
+	}
+
+}
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork, rootDirectory + semanticRoadFilePath);
-	out.open("cout.txt");
-	os.open("count.txt");
-	for (int i = 10; i <= 15; i += 1)
-	{
-		//计算路段所属种类
-		getGlobalSemanticType(routeNetwork.edges, i);
-	}
-	os.close(); out.close();
-	//outputSemanticRouteNetworkToJson(semanticRoadNetworkJsonFileName);
-	//检查POI读入正确性使用 
-	//outputSemanticRouteNetworkToPlainText(routeNetwork, "semanticResultNormalized.txt");
+	openFileFolder("E:\\suhao\\venues\\TrajPattern\\PatternTest\\generateJson\\");
+	/*	out.open("cout.txt");
+		os.open("count.txt");
+		for (int i = 10; i <= 15; i += 1)
+		{
+			//计算路段所属种类
+			getGlobalSemanticType(routeNetwork.edges, i);
+		}
+		os.close(); out.close();*/
+		//outputSemanticRouteNetworkToJson(semanticRoadNetworkJsonFileName);
+		//检查POI读入正确性使用 
+		//outputSemanticRouteNetworkToPlainText(routeNetwork, "semanticResultNormalized.txt");
 }
 
