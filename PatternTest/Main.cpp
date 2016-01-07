@@ -26,9 +26,41 @@ ofstream os;
 struct OD {
 	set<int>originEdges;
 	set<int>destEdges;
+	vector<int>originTime;
+	vector<int>destTime;
+	vector<GeoPoint*>originSpace;
+	vector<GeoPoint*>destSpace;
 };
 typedef pair<pair<int, int>, OD>PAIR;
 map<pair<int, int>, OD>mp;
+
+double standardDeviation(vector<int>input)
+{
+	double avg=0,ans=0;
+	for (int i = 0; i < input.size(); i++)avg += input[i];
+	avg /= input.size();
+	for (int i = 0; i < input.size(); i++)
+		ans += pow((avg - input[i]),2);
+	ans = sqrt(ans / input.size());
+	return ans;
+}
+double standardDeviation(vector<GeoPoint*>input)
+{
+	double ans = 0; GeoPoint* avg = new GeoPoint(0, 0);
+	for (int i = 0; i < input.size(); i++)
+	{
+		avg->lat += input[i]->lat;
+		avg->lon += input[i]->lon;
+	}
+	avg->lat /= input.size();
+	avg->lon /= input.size();
+	
+	for (int i = 0; i < input.size(); i++)
+		ans += pow(GeoPoint::distM(avg,input[i]),2);
+	ans = sqrt(ans / input.size());
+	return ans;
+}
+
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
 vector<TimeSlice*> clusterDemo() {
@@ -444,10 +476,15 @@ void outputJson()
 //	system("pause");
 //	return 0;
 //}
+GeoPoint* getLocation(Edge*edge)
+{
+	GeoPoint* ans=new GeoPoint(((*(edge->figure->begin()))->lat + (*(edge->figure->rbegin()))->lat )/2, ((*(edge->figure->begin()))->lon +(*(edge->figure->rbegin()))->lon )/2);
+	return ans;
+}
 void readODTrajectory(string inPath)
 {
 	ifstream fin(inPath);
-	int time, firstEdge, edge; double tmp; bool first = true; char useless;
+	int firstTime,time,lastTime, firstEdge, edge; double tmp; bool first = true; char useless;
 	while (fin>>time)
 	{
 		if (time==-1)
@@ -456,20 +493,33 @@ void readODTrajectory(string inPath)
 			{
 				if (edge != -1 && firstEdge != -1)
 				{
-					mp[make_pair(routeNetwork.edges[firstEdge]->globalSemanticType, routeNetwork.edges[edge]->globalSemanticType)].originEdges.insert(firstEdge);
-					mp[make_pair(routeNetwork.edges[firstEdge]->globalSemanticType, routeNetwork.edges[edge]->globalSemanticType)].destEdges.insert(edge);
+					pair<int, int>tmp = make_pair(routeNetwork.edges[firstEdge]->globalSemanticType, routeNetwork.edges[edge]->globalSemanticType);
+					mp[tmp].originEdges.insert(firstEdge);
+					mp[tmp].destEdges.insert(edge);
+					mp[tmp].originTime.push_back(firstTime);
+					mp[tmp].destTime.push_back(lastTime);
+					GeoPoint* tt = getLocation(routeNetwork.edges[firstEdge]);
+					mp[tmp].originSpace.push_back(tt);
+					mp[tmp].destSpace.push_back(getLocation(routeNetwork.edges[edge]));
 				}
 			}
 			else first = false;
-			fin >> time >> useless >> firstEdge >> useless >> tmp;
+			fin >> firstTime >> useless >> firstEdge >> useless >> tmp;
 			edge = -1;
 		}
-		else fin >> useless >> edge >> useless >> tmp;
+		else {
+			fin >> useless >> edge >> useless >> tmp; lastTime = time;
+		}
 	}
 	if (edge != -1 && firstEdge != -1)
 	{
-		mp[make_pair(routeNetwork.edges[firstEdge]->globalSemanticType, routeNetwork.edges[edge]->globalSemanticType)].originEdges.insert(firstEdge);
-		mp[make_pair(routeNetwork.edges[firstEdge]->globalSemanticType, routeNetwork.edges[edge]->globalSemanticType)].destEdges.insert(edge);
+		pair<int, int>tmp = make_pair(routeNetwork.edges[firstEdge]->globalSemanticType, routeNetwork.edges[edge]->globalSemanticType);
+		mp[tmp].originEdges.insert(firstEdge);
+		mp[tmp].destEdges.insert(edge);
+		mp[tmp].originTime.push_back(firstTime);
+		mp[tmp].destTime.push_back(lastTime);
+		mp[tmp].originSpace.push_back(getLocation(routeNetwork.edges[firstEdge]));
+		mp[tmp].destSpace.push_back(getLocation(routeNetwork.edges[edge]));
 	}
 }
 bool cmp(const PAIR&lhs, const PAIR&rhs)
@@ -484,7 +534,9 @@ void main() {
 	sort(pairs.begin(), pairs.end(), cmp);
 	for (int i = 0; i < 50; i++)
 	{
-		cout << pairs[i].first.first << ' ' << pairs[i].first.second <<' '<<pairs[i].second.destEdges.size()<< endl;
+		cout << pairs[i].first.first << ' ' << pairs[i].first.second <<' '<<pairs[i].second.destEdges.size()<<' ';
+		cout << (standardDeviation(pairs[i].second.originTime) + standardDeviation(pairs[i].second.destTime))/2 << ' ';
+		cout<< (standardDeviation(pairs[i].second.originSpace) + standardDeviation(pairs[i].second.destSpace)) / 2<<endl;
 	}
 
 
