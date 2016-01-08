@@ -11,7 +11,9 @@ class CoarseGrainedPattern
 public:
 	list<PatternCluster*> patternClusters;
 	CoarseGrainedPattern();
-	void outputCGP();
+	void outputCGP(int index);
+	void outputTimestamp(int index);
+	bool check();
 	~CoarseGrainedPattern();
 };
 

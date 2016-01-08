@@ -394,11 +394,26 @@ vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 		}
 		splitTimeSlot(patternTimeSlots, maxj);
 	}
+	//debug
+	for (auto timeSlot : patternTimeSlots) {
+		for (auto patternCluster : timeSlot->patternClusters) {
+			set<FineGrainedPattern*> patterns = set<FineGrainedPattern*>();
+			for (auto pattern : patternCluster->patterns) {
+				if (patterns.find(pattern) == patterns.end()) {
+					patterns.insert(pattern);
+				}
+				else {
+					cout << "wrong" << endl;
+				}
+			}
+		}
+	}
+	//debug over
 	//然后按语义进行聚类
 	for (int i = 1; i <= TIMECLUSTING_KMEANS_K; ++i) {
 		map<int, PatternCluster*> semanticTypePatternClusterMap = map<int, PatternCluster*>();
 		for (FineGrainedPattern* pattern : patternTimeSlots[i - 1]->patterns) {
-			for each (EdgeCluster* edgeCluster in pattern->edgeClusterPattern)
+			for (EdgeCluster* edgeCluster : pattern->edgeClusterPattern)
 			{
 				PatternCluster* patternCluster = NULL;
 				int semanticType = edgeCluster->clusterCoreEdge->globalSemanticType;
@@ -489,13 +504,34 @@ void excludeCoarseGrainedPattern() {
 	}
 }
 
-//输出
+//检查粗粒度轨迹模式中每个轨迹聚类中的轨迹模式是否是唯一的
+void CGPValidityCheck() {
+	int i = 0;
+	for each (auto CGPPtr in ndbcExtensionResults)
+	{
+		bool result = CGPPtr->check();
+		if (!result) {
+			cout << "第" << i << "条结果有错!" << endl;
+		}
+		++i;
+	}
+}
 
-//输出粗粒度轨迹模式的路段
-void outputCGP() {
+//输出粗粒度轨迹模式的时间戳
+void outputCGPTimestamps() {
+	int i = 0;
 	for each (auto CGP in ndbcExtensionResults)
 	{
-		CGP->outputCGP();
+		CGP->outputTimestamp(i++);
+	}
+}
+
+//输出粗粒度轨迹模式的路段
+void outputCGPs() {
+	int i = 0;
+	for each (auto CGP in ndbcExtensionResults)
+	{
+		CGP->outputCGP(i++);
 	}
 }
 
@@ -530,7 +566,9 @@ int main() {
 	cout << "过滤前，粗粒度轨迹模式数量：" << ndbcExtensionResults.size() << endl;
 	excludeCoarseGrainedPattern();
 	cout << "过滤后，粗粒度轨迹模式数量：" << ndbcExtensionResults.size() << endl;
-	outputCGP();
+	CGPValidityCheck();
+	//outputCGPs();
+	//outputCGPTimestamps();
 
 	cin >> start;
 

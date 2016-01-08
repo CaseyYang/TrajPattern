@@ -2,18 +2,16 @@
 
 
 
-CoarseGrainedPattern::CoarseGrainedPattern():patternClusters(list<PatternCluster*>())
+CoarseGrainedPattern::CoarseGrainedPattern() :patternClusters(list<PatternCluster*>())
 {
 }
 
-void CoarseGrainedPattern::outputCGP()
+void CoarseGrainedPattern::outputCGP(int index)
 {
-	//srand(unsigned(time(NULL)));
 	int startType = patternClusters.front()->semanticType;
 	int endType = patternClusters.back()->semanticType;
-	int randNum = rand() % 1000;
 	stringstream ss;
-	ss << startType << "_" << endType << "_" << randNum << ".txt";
+	ss << "edges_" << startType << "_" << endType << "_" << index << ".txt";
 	ofstream fout(ss.str());
 	for each (PatternCluster* patternClusterPtr in patternClusters)
 	{
@@ -21,9 +19,46 @@ void CoarseGrainedPattern::outputCGP()
 		{
 			fout << edgePtr->id << endl;
 		}
-		fout <<"-1"<< endl;
+		fout << "-1" << endl;
 	}
 	fout.close();
+}
+
+void CoarseGrainedPattern::outputTimestamp(int index)
+{
+	int startType = patternClusters.front()->semanticType;
+	int endType = patternClusters.back()->semanticType;
+	stringstream ss;
+	ss << "time_" << startType << "_" << endType << "_" << index << ".txt";
+	ofstream fout(ss.str());
+	for each (PatternCluster* patternClusterPtr in patternClusters)
+	{
+		for each (auto patternPtr in patternClusterPtr->patterns)
+		{
+			fout << patternPtr->startTime << endl;
+			fout << patternPtr->endTime << endl;
+		}
+		fout << "-1" << endl;
+	}
+	fout.close();
+}
+
+bool CoarseGrainedPattern::check()
+{
+	for each (auto patternClusterPtr in patternClusters)
+	{
+		set<FineGrainedPattern*> patterns = set<FineGrainedPattern*>();
+		for each (auto patternPtr in patternClusterPtr->patterns)
+		{
+			if (patterns.find(patternPtr) == patterns.end()) {
+				patterns.insert(patternPtr);
+			}
+			else {
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 
