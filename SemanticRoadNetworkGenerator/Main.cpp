@@ -210,6 +210,12 @@ void getGlobalSemanticType(vector<Edge*> &edges, int k)
 			if (edge && edge->globalSemanticType == i)
 				tot++;
 		os << i << ' ' << tot << ' ';
+		if (i >= 1) 
+		{
+			Edge*center = calcCenter(clusters[i - 1].cluster);
+			for (int j = 0; j < poiSize; j++)
+				os << center->poiNums[j] << ' ';
+		}
 		os << endl; 
 	}
 
