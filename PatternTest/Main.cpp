@@ -31,6 +31,7 @@ list<list<EdgeCluster*>> ndbcResults;			//NDBC结果
 list<FineGrainedPattern*> fineGrainedPatterns;	//细粒度轨迹模式
 vector<PatternTimeSlot*> patternTimeSlots;		//时间段集合（包含细粒度轨迹模式聚类）
 list<CoarseGrainedPattern*> ndbcExtensionResults;
+int invalidEdgesA[] = { 55402, 27454, 27489, 55435 };
 
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
@@ -278,6 +279,31 @@ list<list<EdgeCluster*>> methodWithKPruningAndMoreInfo() {
 	return ndbcResults;
 }
 
+//清除包含异常路段的细粒度轨迹模式
+void excludeInvalidFineGrainedPattern() {
+	vector<int> invalidEdgesV = vector<int>();
+	for (int i = 0; i < sizeof(invalidEdgesA) / sizeof(int); ++i)
+	{
+		invalidEdgesV.push_back(invalidEdgesA[i]);
+	}
+	for (auto iter = fineGrainedPatterns.begin(); iter != fineGrainedPatterns.end();) {
+		bool invalid = false;
+		for each (auto edgeClusterPtr in (*iter)->edgeClusterPattern)
+		{
+			if (invalidEdgesV.end() != find(invalidEdgesV.begin(), invalidEdgesV.end(), edgeClusterPtr->clusterCoreEdge->id)) {
+				invalid = true;
+				break;
+			}
+		}
+		if (invalid) {
+			iter = fineGrainedPatterns.erase(iter);
+		}
+		else {
+			++iter;
+		}
+	}
+}
+
 //把NDBC结果包装成FineGrainedPattern数组，便于后续处理
 list<FineGrainedPattern*> transferNDBCResultToFineGrainedPatterns() {
 	fineGrainedPatterns = list<FineGrainedPattern*>();
@@ -437,6 +463,35 @@ list<CoarseGrainedPattern*> getCoarseGrainedPatterns() {
 }
 
 //实验统计部分
+
+//清除前后完全重合的粗粒度轨迹模式
+void excludeCoarseGrainedPattern() {
+	for (auto iter = ndbcExtensionResults.begin(); iter != ndbcExtensionResults.end();) {
+		set<int> edges1 = set<int>();
+		set<int> edges2 = set<int>();
+		for each (auto edgePtr in (*iter)->patternClusters.front()->edges)
+		{
+			edges1.insert(edgePtr->id);
+		}
+		for each (auto edgePtr in (*iter)->patternClusters.back()->edges)
+		{
+			edges2.insert(edgePtr->id);
+		}
+		set<int> intersection = set<int>();
+		//set_intersection((*iter)->patternClusters.front()->edges.begin(), (*iter)->patternClusters.front()->edges.end(), (*iter)->patternClusters.back()->edges.begin(), (*iter)->patternClusters.back()->edges.end(), inserter(intersection, intersection.begin()));
+		set_intersection(edges1.begin(), edges1.end(), edges2.begin(), edges2.end(), inserter(intersection, intersection.begin()));
+		if (intersection.size() == edges1.size() || intersection.size() == edges2.size()) {
+			iter = ndbcExtensionResults.erase(iter);
+		}
+		else {
+			++iter;
+		}
+	}
+}
+
+//输出
+
+//输出粗粒度轨迹模式的路段
 void outputCGP() {
 	for each (auto CGP in ndbcExtensionResults)
 	{
@@ -460,18 +515,23 @@ int main() {
 	finish = clock();
 	cout << "细粒度轨迹模式挖掘完成！用时：" << finish - start << "毫秒" << endl;
 
-	//NDBC扩展
+	//NDBC扩展	
 	transferNDBCResultToFineGrainedPatterns();
+	cout << "过滤前，细粒度轨迹模式数量：" << fineGrainedPatterns.size() << endl;
+	excludeInvalidFineGrainedPattern();
+	cout << "过滤后，细粒度轨迹模式数量：" << fineGrainedPatterns.size() << endl;
 	start = clock();
 	clusterFineGrainedPatterns();
 	getCoarseGrainedPatterns();
 	finish = clock();
 	cout << "粗粒度轨迹模式挖掘完成！用时：" << finish - start << "毫秒" << endl;
-	cout << "结果数量：" << ndbcExtensionResults.size() << endl;
-	
+
 	//NDBC扩展统计
-	//outputCGP();
-	
+	cout << "过滤前，粗粒度轨迹模式数量：" << ndbcExtensionResults.size() << endl;
+	excludeCoarseGrainedPattern();
+	cout << "过滤后，粗粒度轨迹模式数量：" << ndbcExtensionResults.size() << endl;
+	outputCGP();
+
 	cin >> start;
 
 	////评估路段序列
