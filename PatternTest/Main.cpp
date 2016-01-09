@@ -528,7 +528,39 @@ bool cmp(const PAIR&lhs, const PAIR&rhs)
 }
 double calcEdge(string fileName)
 {
-
+//	cout << fileName << endl;
+	int edge; double ans = 0;
+	vector<GeoPoint*>input; input.clear();
+	ifstream is;
+	is.open(fileName);
+	while (is >> edge)
+	{
+		if (edge == -1)
+		{
+			ans += standardDeviation(input);
+			input.clear();
+		}
+		else
+			input.push_back(getLocation(routeNetwork.edges[edge]));
+	}
+	return ans/2;
+}
+double calcTime(string fileName)
+{
+	int edge; double ans = 0;
+	vector<int>input; input.clear();
+	ifstream is(fileName);
+	while (is >> edge)
+	{
+		if (edge == -1)
+		{
+			ans += standardDeviation(input);
+			input.clear();
+		}
+		else
+			input.push_back(edge);
+	}
+	return ans / 2;
 }
 void readEdgeTime(string rootPath)
 {
@@ -543,9 +575,9 @@ void readEdgeTime(string rootPath)
 		int trajIndex = 0;
 		do {
 			string inputFileName = fileInfo.name;
-			cout<<calcEdge(inputFileName)<<' ';
+			cout<<calcEdge(rootPath+inputFileName)<<' ';
 			inputFileName.replace(0,5, "time");
-			cout << calcTime(inputFileName) << endl;
+			cout << calcTime(rootPath + inputFileName) << endl;
 		} while (_findnext(lf, &fileInfo) == 0);
 		_findclose(lf);
 		return;
@@ -555,6 +587,7 @@ void readEdgeTime(string rootPath)
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
+	readEdgeTime("E:\\suhao\\venues\\TrajPattern\\PatternTest\\generateJson\\tmp\\");
 /*	readODTrajectory(trajectoryPath);
 	vector<PAIR>pairs(mp.begin(), mp.end());
 	sort(pairs.begin(), pairs.end(), cmp);
