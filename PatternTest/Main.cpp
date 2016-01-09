@@ -526,9 +526,30 @@ bool cmp(const PAIR&lhs, const PAIR&rhs)
 {
 	return lhs.second.destEdges.size() > rhs.second.destEdges.size();
 }
-void readEdgeTime()
+double calcEdge(string fileName)
 {
 
+}
+void readEdgeTime(string rootPath)
+{
+	string completeInputFilesPath = rootPath + "edges*.txt";
+	const char* dir = completeInputFilesPath.c_str();
+	_finddata_t fileInfo;//文件信息
+	intptr_t lf;//文件句柄
+	if ((lf = _findfirst(dir, &fileInfo)) == -1l) {
+		return;
+	}
+	else {
+		int trajIndex = 0;
+		do {
+			string inputFileName = fileInfo.name;
+			cout<<calcEdge(inputFileName)<<' ';
+			inputFileName.replace(0,5, "time");
+			cout << calcTime(inputFileName) << endl;
+		} while (_findnext(lf, &fileInfo) == 0);
+		_findclose(lf);
+		return;
+	}
 }
 
 void main() {
