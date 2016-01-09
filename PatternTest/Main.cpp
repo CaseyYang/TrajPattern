@@ -526,10 +526,15 @@ bool cmp(const PAIR&lhs, const PAIR&rhs)
 {
 	return lhs.second.destEdges.size() > rhs.second.destEdges.size();
 }
+void readEdgeTime()
+{
+
+}
+
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
-	readODTrajectory(trajectoryPath);
+/*	readODTrajectory(trajectoryPath);
 	vector<PAIR>pairs(mp.begin(), mp.end());
 	sort(pairs.begin(), pairs.end(), cmp);
 	for (int i = 0; i < 50; i++)
@@ -537,7 +542,7 @@ void main() {
 		cout << pairs[i].first.first << ' ' << pairs[i].first.second <<' '<<pairs[i].second.destEdges.size()<<' ';
 		cout << (standardDeviation(pairs[i].second.originTime) + standardDeviation(pairs[i].second.destTime))/2 << ' ';
 		cout<< (standardDeviation(pairs[i].second.originSpace) + standardDeviation(pairs[i].second.destSpace)) / 2<<endl;
-	}
+	}*/
 
 
 
