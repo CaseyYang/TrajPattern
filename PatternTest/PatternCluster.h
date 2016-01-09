@@ -6,7 +6,7 @@
 class PatternCluster
 {
 public:
-	list<FineGrainedPattern*> patterns;	//组成轨迹模式聚类的各条轨迹模式
+	set<FineGrainedPattern*> patterns;	//组成轨迹模式聚类的各条轨迹模式
 	int semanticType;					//轨迹模式聚类的语义类型
 	set<int> objs;						//轨迹模式聚类包含的轨迹
 	set<Edge*> edges;					//轨迹模式聚类包含的路段

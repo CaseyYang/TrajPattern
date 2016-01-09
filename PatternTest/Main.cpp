@@ -394,21 +394,7 @@ vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 		}
 		splitTimeSlot(patternTimeSlots, maxj);
 	}
-	//debug
-	for (auto timeSlot : patternTimeSlots) {
-		for (auto patternCluster : timeSlot->patternClusters) {
-			set<FineGrainedPattern*> patterns = set<FineGrainedPattern*>();
-			for (auto pattern : patternCluster->patterns) {
-				if (patterns.find(pattern) == patterns.end()) {
-					patterns.insert(pattern);
-				}
-				else {
-					cout << "wrong" << endl;
-				}
-			}
-		}
-	}
-	//debug over
+
 	//然后按语义进行聚类
 	for (int i = 1; i <= TIMECLUSTING_KMEANS_K; ++i) {
 		map<int, PatternCluster*> semanticTypePatternClusterMap = map<int, PatternCluster*>();
@@ -427,6 +413,21 @@ vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 			}
 		}
 	}
+	//debug
+	//for (auto timeSlot : patternTimeSlots) {
+	//	for (auto patternCluster : timeSlot->patternClusters) {
+	//		set<FineGrainedPattern*> patterns = set<FineGrainedPattern*>();
+	//		for (auto pattern : patternCluster->patterns) {
+	//			if (patterns.find(pattern) == patterns.end()) {
+	//				patterns.insert(pattern);
+	//			}
+	//			else {
+	//				cout << "wrong" << endl;
+	//			}
+	//		}
+	//	}
+	//}
+	//debug over
 	return patternTimeSlots;
 }
 
@@ -449,7 +450,7 @@ bool isPattern(set<int> &set1, set<int> &set2, set<int> &result) {
 //得到粗粒度轨迹模式
 list<CoarseGrainedPattern*> getCoarseGrainedPatterns() {
 	ndbcExtensionResults = list<CoarseGrainedPattern*>();
-	list<CoarseGrainedPattern*> canadidates = list<CoarseGrainedPattern*>();
+	//list<CoarseGrainedPattern*> canadidates = list<CoarseGrainedPattern*>();
 	for (vector<PatternTimeSlot*>::iterator timeSlotIter = patternTimeSlots.begin(); timeSlotIter < patternTimeSlots.end(); ++timeSlotIter) {
 		//for each(CoarseGrainedPattern* canadidate in canadidates) {
 		//	if(isCGPonJaccard(canadidate->patternClusters->objs, anotherPatternClusterPtr->objs))
@@ -567,8 +568,8 @@ int main() {
 	excludeCoarseGrainedPattern();
 	cout << "过滤后，粗粒度轨迹模式数量：" << ndbcExtensionResults.size() << endl;
 	CGPValidityCheck();
-	//outputCGPs();
-	//outputCGPTimestamps();
+	outputCGPs();
+	outputCGPTimestamps();
 
 	cin >> start;
 
