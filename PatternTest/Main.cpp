@@ -14,6 +14,7 @@
 #include "PatternTimeSlot.h"
 #include "PatternCluster.h"
 #include "CoarseGrainedPattern.h"
+#include "Main.h"
 using namespace std;
 
 string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";
@@ -373,6 +374,11 @@ void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 	timeSlots.push_back(new PatternTimeSlot(b[mj]));
 }
 
+//对时间段进行排序的比较函数：时间段先后比较
+bool timeSlotComparer(const PatternTimeSlot* p1, const PatternTimeSlot* p2) {
+	return p1->center < p2->center;
+}
+
 //对细粒度轨迹模式按时间段和语义进行聚类
 vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 {
@@ -394,7 +400,13 @@ vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 		}
 		splitTimeSlot(patternTimeSlots, maxj);
 	}
-
+	//对时间段进行排序
+	sort(patternTimeSlots.begin(), patternTimeSlots.end(), timeSlotComparer);
+	ofstream fout("timeSlots.txt");
+	for (auto patternTimeSlot : patternTimeSlots) {
+		fout << patternTimeSlot->center << endl;
+	}
+	fout.close();
 	//然后按语义进行聚类
 	for (int i = 1; i <= TIMECLUSTING_KMEANS_K; ++i) {
 		map<int, PatternCluster*> semanticTypePatternClusterMap = map<int, PatternCluster*>();

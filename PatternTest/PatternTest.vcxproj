@@ -150,6 +150,7 @@
     <ClInclude Include="CoarseGrainedPattern.h" />
     <ClInclude Include="Evaluation.h" />
     <ClInclude Include="FineGrainedPattern.h" />
+    <ClInclude Include="Main.h" />
     <ClInclude Include="Parameters.h" />
     <ClInclude Include="EdgeCluster.h" />
     <ClInclude Include="NewTimeSlice.h" />
