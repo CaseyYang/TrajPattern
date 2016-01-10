@@ -16,6 +16,7 @@ public:
 	PatternTimeSlot();
 	PatternTimeSlot(list<FineGrainedPattern*>&patterns);
 	void insertPattern(FineGrainedPattern* pattern);	//向时间簇中增加一个元素
+	int calcCenter();									//计算时间簇时间中心
 	double calcSSE();									//计算时间簇的SSE（误差平方和）
 	void clear();										//清空时间簇中所有数据
 	void outputTimeStamps(string filePath);				//输出所有的中值时间戳，调试用

@@ -6,14 +6,13 @@ PatternTimeSlot::PatternTimeSlot() :patterns(vector<FineGrainedPattern*>()), tim
 }
 
 PatternTimeSlot::PatternTimeSlot(list<FineGrainedPattern*>&patterns) : patterns(patterns.begin(), patterns.end()), timeStamps(vector<int>()), center(0), SSE(0) {
-	int total = 0;
 	for each (FineGrainedPattern* pattern in this->patterns)
 	{
 		int avg = (pattern->startTime + pattern->endTime) / 2;
 		timeStamps.push_back(avg);
-		total += avg;
+		center += avg;
 	}
-	center = total / static_cast<int>(timeStamps.size());
+	center /= static_cast<int>(timeStamps.size());
 }
 
 void PatternTimeSlot::insertPattern(FineGrainedPattern* pattern) {
@@ -21,6 +20,19 @@ void PatternTimeSlot::insertPattern(FineGrainedPattern* pattern) {
 	int avg = (pattern->startTime + pattern->endTime) / 2;
 	timeStamps.push_back(avg);
 	center = (center*(static_cast<int>(timeStamps.size()) - 1) + avg) / static_cast<int>(timeStamps.size());
+}
+
+int PatternTimeSlot::calcCenter()
+{
+	if (center != 0) {
+		cout << "在计算时间簇时间中心时出错！" << endl;
+	}
+	for each (int timeStamp in this->timeStamps)
+	{
+		center += timeStamp;
+	}
+	center/= static_cast<int>(timeStamps.size());
+	return center;
 }
 
 double PatternTimeSlot::calcSSE() {

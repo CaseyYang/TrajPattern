@@ -357,8 +357,10 @@ void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 					b[i].insertPattern(timeSlots[maxj]->patterns[k]);
 				}
 			}
-			timeSlotCenter1 = a[i].center;
-			timeSlotCenter2 = b[i].center;
+			//timeSlotCenter1 = a[i].center;
+			//timeSlotCenter2 = b[i].center;
+			timeSlotCenter1 = a[i].calcCenter();
+			timeSlotCenter2 = b[i].calcCenter();
 			//fout << a[i].timeStamps.size() << " " << a[i].center << " " << b[i].timeStamps.size() << " " << b[i].center << endl;
 		}
 		//fout << endl;
