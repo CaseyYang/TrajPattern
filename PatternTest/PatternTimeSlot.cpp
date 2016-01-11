@@ -19,7 +19,8 @@ void PatternTimeSlot::insertPattern(FineGrainedPattern* pattern) {
 	patterns.push_back(pattern);
 	int avg = (pattern->startTime + pattern->endTime) / 2;
 	timeStamps.push_back(avg);
-	center = (center*(static_cast<int>(timeStamps.size()) - 1) + avg) / static_cast<int>(timeStamps.size());
+	//不能增量式更新center，因为这样每次更新都会有进度损失（center是int型），在KMEANS算法中经过几百次增量式更新其误差会达到非常离谱的程度
+	//center = (center*(static_cast<int>(timeStamps.size()) - 1) + avg) / static_cast<int>(timeStamps.size());
 }
 
 int PatternTimeSlot::calcCenter()

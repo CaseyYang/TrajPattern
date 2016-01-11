@@ -2,11 +2,11 @@
 
 
 
-PatternCluster::PatternCluster():patterns(set<FineGrainedPattern*>()), semanticType(-1), objs(set<int>()), edges(set<Edge*>())
+PatternCluster::PatternCluster() :patterns(set<FineGrainedPattern*>()), semanticType(-1), objs(set<int>()), edges(set<Edge*>())
 {
 }
 
-PatternCluster::PatternCluster(const PatternCluster & sourcePatternCluster, set<int>& trajObjs):patterns(set<FineGrainedPattern*>()),semanticType(sourcePatternCluster.semanticType),objs(set<int>()),edges(set<Edge*>())
+PatternCluster::PatternCluster(const PatternCluster & sourcePatternCluster, set<int>& trajObjs) : patterns(set<FineGrainedPattern*>()), semanticType(sourcePatternCluster.semanticType), objs(set<int>()), edges(set<Edge*>())
 {
 	for each (FineGrainedPattern* fgpPtr in sourcePatternCluster.patterns)
 	{
@@ -25,10 +25,24 @@ PatternCluster::PatternCluster(const PatternCluster & sourcePatternCluster, set<
 
 void PatternCluster::insertPattern(FineGrainedPattern* pattern) {
 	this->patterns.insert(pattern);
-	objs.insert(pattern->clusterObjects.begin(),pattern->clusterObjects.end());
+	objs.insert(pattern->clusterObjects.begin(), pattern->clusterObjects.end());
 	for each (auto edgeClusterPtr in pattern->edgeClusterPattern)
 	{
 		edges.insert(edgeClusterPtr->clusterCoreEdge);
+	}
+}
+
+void PatternCluster::calcStartAndEndTimeStamp()
+{
+	startTimeStamp = 86400;
+	endTimeStamp = 0;
+	for (auto patternClusterPtr : patterns) {
+		if (patternClusterPtr->endTime > endTimeStamp) {
+			endTimeStamp = patternClusterPtr->endTime;
+		}
+		if (patternClusterPtr->startTime < startTimeStamp) {
+			startTimeStamp = patternClusterPtr->startTime;
+		}
 	}
 }
 

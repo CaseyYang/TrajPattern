@@ -15,6 +15,7 @@ public:
 	PatternCluster();
 	PatternCluster(const PatternCluster& sourcePatternCluster, set<int>& trajObjs);//复制构造函数，只包含trajObjs中有的轨迹组成的Pattern
 	void insertPattern(FineGrainedPattern* pattern);
+	void calcStartAndEndTimeStamp();
 	~PatternCluster();
 };
 

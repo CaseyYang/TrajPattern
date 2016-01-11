@@ -6,12 +6,18 @@ CoarseGrainedPattern::CoarseGrainedPattern() :patternClusters(list<PatternCluste
 {
 }
 
-void CoarseGrainedPattern::outputCGP(int index)
+void CoarseGrainedPattern::outputCGP()
 {
 	int startType = patternClusters.front()->semanticType;
 	int endType = patternClusters.back()->semanticType;
+	int cluster1StartTimeStamp = patternClusters.front()->startTimeStamp;
+	int cluster1EndTimeStamp = patternClusters.front()->endTimeStamp;
+	int cluster2StartTimeStamp = patternClusters.back()->startTimeStamp;
+	int cluster2EndTimeStamp = patternClusters.back()->endTimeStamp;
 	stringstream ss;
-	ss << "edges_" << startType << "_" << endType << "_" << index << ".txt";
+	ss << "edges_" << startType << "_" << endType << "_"
+		<< cluster1StartTimeStamp << "_" << cluster1EndTimeStamp << "_"
+		<< cluster2StartTimeStamp << "_" << cluster2EndTimeStamp << ".txt";
 	ofstream fout(ss.str());
 	for each (PatternCluster* patternClusterPtr in patternClusters)
 	{
@@ -24,12 +30,18 @@ void CoarseGrainedPattern::outputCGP(int index)
 	fout.close();
 }
 
-void CoarseGrainedPattern::outputTimestamp(int index)
+void CoarseGrainedPattern::outputTimestamp()
 {
 	int startType = patternClusters.front()->semanticType;
 	int endType = patternClusters.back()->semanticType;
+	int cluster1StartTimeStamp = patternClusters.front()->startTimeStamp;
+	int cluster1EndTimeStamp = patternClusters.front()->endTimeStamp;
+	int cluster2StartTimeStamp = patternClusters.back()->startTimeStamp;
+	int cluster2EndTimeStamp = patternClusters.back()->endTimeStamp;
 	stringstream ss;
-	ss << "time_" << startType << "_" << endType << "_" << index << ".txt";
+	ss << "time_" << startType << "_" << endType << "_" 
+		<< cluster1StartTimeStamp << "_" << cluster1EndTimeStamp << "_" 
+		<< cluster2StartTimeStamp << "_" << cluster2EndTimeStamp << ".txt";
 	ofstream fout(ss.str());
 	for each (PatternCluster* patternClusterPtr in patternClusters)
 	{

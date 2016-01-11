@@ -357,8 +357,6 @@ void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 					b[i].insertPattern(timeSlots[maxj]->patterns[k]);
 				}
 			}
-			//timeSlotCenter1 = a[i].center;
-			//timeSlotCenter2 = b[i].center;
 			timeSlotCenter1 = a[i].calcCenter();
 			timeSlotCenter2 = b[i].calcCenter();
 			//fout << a[i].timeStamps.size() << " " << a[i].center << " " << b[i].timeStamps.size() << " " << b[i].center << endl;
@@ -404,11 +402,12 @@ vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 	}
 	//对时间段进行排序
 	sort(patternTimeSlots.begin(), patternTimeSlots.end(), timeSlotComparer);
-	ofstream fout("timeSlots.txt");
-	for (auto patternTimeSlot : patternTimeSlots) {
-		fout << patternTimeSlot->center << endl;
-	}
-	fout.close();
+	//输出时间段分段结果至timeSlots.txt
+	//ofstream fout("timeSlots.txt");
+	//for (auto patternTimeSlot : patternTimeSlots) {
+	//	fout << patternTimeSlot->center << endl;
+	//}
+	//fout.close();
 	//然后按语义进行聚类
 	for (int i = 1; i <= TIMECLUSTING_KMEANS_K; ++i) {
 		map<int, PatternCluster*> semanticTypePatternClusterMap = map<int, PatternCluster*>();
@@ -494,9 +493,14 @@ list<CoarseGrainedPattern*> getCoarseGrainedPatterns() {
 
 //实验统计部分
 
-//清除前后完全重合的粗粒度轨迹模式
+//清除前后路段完全重合的粗粒度轨迹模式
+//清除包含语义类型为-1的聚类组成的粗粒度轨迹模式
 void excludeCoarseGrainedPattern() {
 	for (auto iter = ndbcExtensionResults.begin(); iter != ndbcExtensionResults.end();) {
+		if ((*iter)->patternClusters.front()->semanticType == -1 || (*iter)->patternClusters.back()->semanticType == -1) {
+			iter = ndbcExtensionResults.erase(iter);
+			continue;
+		}
 		set<int> edges1 = set<int>();
 		set<int> edges2 = set<int>();
 		for each (auto edgePtr in (*iter)->patternClusters.front()->edges)
@@ -532,21 +536,28 @@ void CGPValidityCheck() {
 	}
 }
 
+//统计粗粒度轨迹模式中每个轨迹聚类的时间段范围
+void getPatternClusterTimeStamps() {
+	for (auto CGP : ndbcExtensionResults) {
+		for (auto patternClusterPtr : CGP->patternClusters) {
+			patternClusterPtr->calcStartAndEndTimeStamp();
+		}
+	}
+}
+
 //输出粗粒度轨迹模式的时间戳
 void outputCGPTimestamps() {
-	int i = 0;
 	for each (auto CGP in ndbcExtensionResults)
 	{
-		CGP->outputTimestamp(i++);
+		CGP->outputTimestamp();
 	}
 }
 
 //输出粗粒度轨迹模式的路段
 void outputCGPs() {
-	int i = 0;
 	for each (auto CGP in ndbcExtensionResults)
 	{
-		CGP->outputCGP(i++);
+		CGP->outputCGP();
 	}
 }
 
@@ -582,7 +593,7 @@ int main() {
 	excludeCoarseGrainedPattern();
 	cout << "过滤后，粗粒度轨迹模式数量：" << ndbcExtensionResults.size() << endl;
 	CGPValidityCheck();
-	outputCGPs();
+	//outputCGPs();
 	outputCGPTimestamps();
 
 	cin >> start;
