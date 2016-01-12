@@ -255,8 +255,10 @@ int main() {
 	for (int timeStamp = 0; timeStamp < 1440; timeStamp++) {
 		timeSlices.at(timeStamp) = new TimeSlice(timeStamp);
 	}
+	clock_t start = clock();
 	scanTrajFolder(filePath, timeSlices);//读入轨迹，注意这里要进入函数修改轨迹文件目录！！！
-	cout << "读入所有轨迹" << endl;
+	clock_t end = clock();
+	cout << "读入所有轨迹！用时" << end - start << "毫秒" << endl;
 	int outIndexCount = 0;
 	for each (TimeSlice* timeSlice in timeSlices)//对轨迹采样点建立索引
 	{
@@ -267,34 +269,48 @@ int main() {
 			}
 		}
 	}
+	
 	cout << "对轨迹建立索引完毕！" << endl;
 	cout << "共有" << outIndexCount << "个采样点在索引范围外" << endl;
+	start = end;
 	for each (TimeSlice* timeSlice in timeSlices)
 	{
 		timeSlice->clustering(routeNetork);
+		if (timeSlice->time == 100 || timeSlice->time == 500 || timeSlice->time == 1000) {
+			cout << "完成至" << timeSlice->time << endl;
+		}
 	}
-	cout << "聚类结束！" << endl;
-	clock_t start = clock();
+	end = clock();
+	cout << "聚类结束！用时" << end - start << "毫秒" << endl;
+	start = end;
 	DiscoveringClosedCrowds();
 
-	ofstream fout("debug.txt");
-	fout << "cloCrow number: " << cloCrow.size() << endl;
+	//ofstream fout("debug.txt");
+	//fout << "cloCrow number: " << cloCrow.size() << endl;
 	double r = 0, cntw = 0;
 	for (list<list<Cluster*>>::iterator ip = cloCrow.begin(); ip != cloCrow.end(); ip++) {
 		r += (*ip).size(); cntw++;
 	}
-	fout << r / cntw << endl;
-	int cnt = 0;
+	//fout << r / cntw << endl;
+	//int cnt = 0;
 	for (list<list<Cluster*>>::iterator it = cloCrow.begin(); it != cloCrow.end(); it++) {
-		Ans = TestAndDivide(*it, Kc, Kp, Mp);
-		for (list<list<Cluster*>>::iterator ip = Ans.begin(); ip != Ans.end(); ip++) {
-			fout << (*ip).size() << endl;
-			cnt++;
+		//Ans = TestAndDivide(*it, Kc, Kp, Mp);
+		int ansSize = static_cast<int>(Ans.size());
+		auto curAns = TestAndDivide(*it, Kc, Kp, Mp);
+		Ans.merge(curAns);
+		if (Ans.size() - ansSize != curAns.size()) {
+			cout << "结果合并环节出错！" << endl;
+			system("pause");
 		}
+		//for (list<list<Cluster*>>::iterator ip = Ans.begin(); ip != Ans.end(); ip++) {
+		//	//fout << (*ip).size() << endl;
+		//	cnt++;
+		//}
 	}
-	clock_t end = clock();
-	cout << "用时" << end - start << endl;
-	fout << "Total Number: " << cnt << endl;
+	end = clock();
+	cout << "用时" << end - start << "毫秒" << endl;
+	cout << "结果序列数量：" << Ans.size() << endl;
+	//fout << "Total Number: " << cnt << endl;
 	resultProcess();
 	system("pause");
 	return 0;
