@@ -593,7 +593,8 @@ int main() {
 	excludeCoarseGrainedPattern();
 	cout << "过滤后，粗粒度轨迹模式数量：" << ndbcExtensionResults.size() << endl;
 	CGPValidityCheck();
-	//outputCGPs();
+	getPatternClusterTimeStamps();
+	outputCGPs();
 	outputCGPTimestamps();
 
 	cin >> start;
