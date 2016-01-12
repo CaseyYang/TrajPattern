@@ -215,7 +215,7 @@ void resultProcess() {
 			if (edge != NULL) lastClusterEdges.insert(edge);
 		}
 		stringstream ss;
-		ss << "edges_" << ++index;
+		ss << "edges_" << ++index<<".txt";
 		ofstream fout(ss.str());
 		for (auto edge : firstClusterEdges) {
 			fout << edge->id << endl;
@@ -298,10 +298,6 @@ int main() {
 		int ansSize = static_cast<int>(Ans.size());
 		auto curAns = TestAndDivide(*it, Kc, Kp, Mp);
 		Ans.merge(curAns);
-		if (Ans.size() - ansSize != curAns.size()) {
-			cout << "结果合并环节出错！" << endl;
-			system("pause");
-		}
 		//for (list<list<Cluster*>>::iterator ip = Ans.begin(); ip != Ans.end(); ip++) {
 		//	//fout << (*ip).size() << endl;
 		//	cnt++;
