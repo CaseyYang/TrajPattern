@@ -60,6 +60,50 @@ double standardDeviation(vector<GeoPoint*>input)
 	ans = sqrt(ans / input.size());
 	return ans;
 }
+double avgDeviation(vector<int>input)
+{
+	double ans = 0;
+	for (int i = 0; i < input.size(); i++)
+		for (int j = i + 1; j < input.size();j++)
+		ans += abs((input[j] - input[i]));
+	ans = ans / input.size()/(input.size()-1);
+	return ans;
+}
+double avgDeviation(vector<GeoPoint*>input)
+{
+	double ans = 0;
+	for (int i = 0; i < input.size(); i++)
+		for (int j = i + 1; j < input.size(); j++)
+			ans += abs(GeoPoint::distM(input[j], input[i]));
+	ans = ans / input.size() / (input.size() - 1);
+	return ans;
+}
+double standardDeviation(set<int>input)
+{
+	double avg = 0, ans = 0;
+	for (int i : input)avg += i;
+	avg /= input.size();
+	for (int i : input)
+		ans += pow((avg - i), 2);
+	ans = sqrt(ans / input.size());
+	return ans;
+}
+double standardDeviation(set<GeoPoint*>input)
+{
+	double ans = 0; GeoPoint* avg = new GeoPoint(0, 0);
+	for (GeoPoint* i : input)
+	{
+		avg->lat += i->lat;
+		avg->lon += i->lon;
+	}
+	avg->lat /= input.size();
+	avg->lon /= input.size();
+
+	for (GeoPoint* i : input)
+		ans += pow(GeoPoint::distM(avg, i), 2);
+	ans = sqrt(ans / input.size());
+	return ans;
+}
 
 
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
@@ -498,17 +542,16 @@ void readODTrajectory(string inPath)
 					mp[tmp].destEdges.insert(edge);
 					mp[tmp].originTime.push_back(firstTime);
 					mp[tmp].destTime.push_back(lastTime);
-					GeoPoint* tt = getLocation(routeNetwork.edges[firstEdge]);
-					mp[tmp].originSpace.push_back(tt);
+					mp[tmp].originSpace.push_back(getLocation(routeNetwork.edges[firstEdge]));
 					mp[tmp].destSpace.push_back(getLocation(routeNetwork.edges[edge]));
 				}
 			}
 			else first = false;
-			fin >> firstTime >> useless >> firstEdge >> useless >> tmp;
+			fin >> firstTime >> useless >> firstEdge >> useless >> tmp; 
 			edge = -1;
 		}
 		else {
-			fin >> useless >> edge >> useless >> tmp; lastTime = time;
+			fin >> useless >> edge >> useless >> tmp;  lastTime = time;
 		}
 	}
 	if (edge != -1 && firstEdge != -1)
@@ -537,12 +580,14 @@ double calcEdge(string fileName)
 	{
 		if (edge == -1)
 		{
-			ans += standardDeviation(input);
+			ans += avgDeviation(input);
+		//	cout << input.size() << ' ';
 			input.clear();
 		}
 		else
 			input.push_back(getLocation(routeNetwork.edges[edge]));
 	}
+//	cout << endl;
 	return ans/2;
 }
 double calcTime(string fileName)
@@ -554,16 +599,19 @@ double calcTime(string fileName)
 	{
 		if (edge == -1)
 		{
-			ans += standardDeviation(input);
+			ans += avgDeviation(input);
+	//		cout << input.size()<<' ';
 			input.clear();
 		}
 		else
 			input.push_back(edge);
 	}
+//	cout << endl;
 	return ans / 2;
 }
 void readEdgeTime(string rootPath)
 {
+	ofstream cout("EdgeTime.csv");
 	string completeInputFilesPath = rootPath + "edges*.txt";
 	const char* dir = completeInputFilesPath.c_str();
 	_finddata_t fileInfo;//文件信息
@@ -575,30 +623,36 @@ void readEdgeTime(string rootPath)
 		int trajIndex = 0;
 		do {
 			string inputFileName = fileInfo.name;
-			cout<<calcEdge(rootPath+inputFileName)<<' ';
+			cout<<calcEdge(rootPath+inputFileName)<<',';
 			inputFileName.replace(0,5, "time");
 			cout << calcTime(rootPath + inputFileName) << endl;
 		} while (_findnext(lf, &fileInfo) == 0);
 		_findclose(lf);
 		return;
 	}
+	cout.close();
 }
 
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
-	readEdgeTime("E:\\suhao\\venues\\TrajPattern\\PatternTest\\generateJson\\tmp\\");
-/*	readODTrajectory(trajectoryPath);
+	readEdgeTime("E:\\suhao\\venues\\TrajPattern\\PatternTest\\generateJson\\");
+	readODTrajectory(trajectoryPath);
 	vector<PAIR>pairs(mp.begin(), mp.end());
 	sort(pairs.begin(), pairs.end(), cmp);
-	for (int i = 0; i < 50; i++)
+	ofstream cout("OD.csv");
+	for (int i = 0; i < 20; i++)
 	{
-		cout << pairs[i].first.first << ' ' << pairs[i].first.second <<' '<<pairs[i].second.destEdges.size()<<' ';
-		cout << (standardDeviation(pairs[i].second.originTime) + standardDeviation(pairs[i].second.destTime))/2 << ' ';
-		cout<< (standardDeviation(pairs[i].second.originSpace) + standardDeviation(pairs[i].second.destSpace)) / 2<<endl;
-	}*/
-
-
+//		cout << pairs[i].first.first << ',' << pairs[i].first.second <<','<<pairs[i].second.destEdges.size()<<',';
+		for (int j=0; j < pairs[i].second.originTime.size(); j++)
+			pairs[i].second.originTime[j] /= 60;
+		for (int j=0; j < pairs[i].second.destTime.size(); j++)
+			pairs[i].second.destTime[j] /= 60;
+		cout<< (avgDeviation(pairs[i].second.originSpace) + avgDeviation(pairs[i].second.destSpace)) / 2 << ',';
+		cout << (avgDeviation(pairs[i].second.originTime) + avgDeviation(pairs[i].second.destTime)) / 2  << endl;
+	}
+	cout.close();
+	
 
 
 	/*
