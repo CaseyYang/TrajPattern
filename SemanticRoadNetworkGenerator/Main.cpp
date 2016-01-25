@@ -201,22 +201,25 @@ void getGlobalSemanticType(vector<Edge*> &edges, int k)
 	for (int i = 1; i <= k; i++)
 		for (auto edge : clusters[i - 1].cluster)
 			edge->globalSemanticType = i;
-	os << "count=" << k << endl;
+//	os << "count=" << k << endl;
 //	out << "count=" << k << endl;
-	for (int i = -1; i <= k; i++)
+	vector<int>clusterNO;
+	for (int i = 1; i <= k; i++)
 	{
 		int tot = 0;
 		for each (Edge* edge in routeNetwork.edges)
 			if (edge && edge->globalSemanticType == i)
 				tot++;
-		os << i << ' ' << tot << ' ';
+		os << tot <<endl;
+		clusterNO.push_back(tot);
+		/*
 		if (i >= 1) 
 		{
 			Edge*center = calcCenter(clusters[i - 1].cluster);
 			for (int j = 0; j < poiSize; j++)
 				os << center->poiNums[j] << ' ';
 		}
-		os << endl; 
+		os << endl; */
 	}
 
 
@@ -227,12 +230,14 @@ void main() {
 	poiNumsNormalize();
 //	out.open("cout.txt");
 	os.open("count.txt");
-	/*for (int i = 17; i <= 20; i += 1)
+	for (int i = 5; i <= 5; i += 1)
 	{
+		os << i << endl;
 		//计算路段所属种类
 		getGlobalSemanticType(routeNetwork.edges, i);
-	}*/ //out.close();
-	getGlobalSemanticType(routeNetwork.edges, KMEANS_K);
+	} 
+	//out.close();
+//	getGlobalSemanticType(routeNetwork.edges, KMEANS_K);
 	outputSemanticRouteNetwork(semanticRoadFilePath);
 	os.close();
 
