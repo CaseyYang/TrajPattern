@@ -4,9 +4,9 @@
 #include <time.h>
 #include"../MapLibraries/Map.h"
 using namespace std;
-
+ 
 string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";
-string mapDirectory = "新加坡路网\\";
+string mapDirectory = "新加坡路网\\"; 
 string poiFilePath = "NDBC扩展\\poi.csv";
 string semanticRoadFilePath = "semanticRoad.txt";
 double neighborRange = 200.0;
@@ -15,6 +15,17 @@ Map routeNetwork(rootDirectory + mapDirectory, 500);
 map<string, int> categories;
 int poiSize = 13;
 ofstream os, out;
+
+double standardDeviation(vector<int>input)
+{
+	double avg = 0, ans = 0;
+	for (int i = 0; i < input.size(); i++)avg += input[i];
+	avg /= input.size();
+	for (int i = 0; i < input.size(); i++)
+		ans += pow((avg - input[i]), 2);
+	ans = sqrt(ans / input.size());
+	return ans;
+}
 //读入POI数据，依此填充路段的poiNums数组
 //对于每个POI点，寻找neighborRange范围内的路段，在路段的poiNums数组中对应POI种类计数加1
 void generateSemanticRouteNetwork() {
@@ -189,6 +200,7 @@ void getGlobalSemanticType(vector<Edge*> &edges, int k)
 	double  maxSSE; int maxj = 0;
 	for (int i = 1; i < k; i++)
 	{
+		cout << i << endl;
 		maxSSE = 0;
 		for (int j = 0; j < clusters.size(); j++)
 			if (clusters[j].SSE>maxSSE)
@@ -221,7 +233,7 @@ void getGlobalSemanticType(vector<Edge*> &edges, int k)
 		}
 		os << endl; */
 	}
-
+	os << standardDeviation(clusterNO) << endl;
 
 }
 
@@ -229,8 +241,8 @@ void main() {
 	generateSemanticRouteNetwork();
 	poiNumsNormalize();
 //	out.open("cout.txt");
-	os.open("count.txt");
-	for (int i = 5; i <= 5; i += 1)
+	os.open("count.csv"); 
+	for (int i = 5; i <= 20; i += 1) 
 	{
 		os << i << endl;
 		//计算路段所属种类

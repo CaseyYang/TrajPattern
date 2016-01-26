@@ -23,6 +23,16 @@ list<list<EdgeCluster*>> resultsList;//结果
 int poiSize = 13;
 ofstream os, out;
 
+double standardDeviation(vector<int>input)
+{
+	double avg = 0, ans = 0;
+	for (int i = 0; i < input.size(); i++)avg += input[i];
+	avg /= input.size();
+	for (int i = 0; i < input.size(); i++)
+		ans += pow((avg - input[i]), 2);
+	ans = sqrt(ans / input.size());
+	return ans;
+}
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
 vector<TimeSlice*> clusterDemo() {
 	vector<TimeSlice*> timeSlices = vector<TimeSlice*>(1440);//初始化时间片集合
