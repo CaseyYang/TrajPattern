@@ -636,8 +636,8 @@ void readEdgeTime(string rootPath)
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
-	readEdgeTime("E:\\suhao\\venues\\TrajPattern\\PatternTest\\generateJson\\");
-	readODTrajectory(trajectoryPath);
+	readEdgeTime("D:\\Users\\苏昊\\Documents\\CGP\\tmp\\");
+/*	readODTrajectory(trajectoryPath);
 	vector<PAIR>pairs(mp.begin(), mp.end());
 	sort(pairs.begin(), pairs.end(), cmp);
 	ofstream cout("OD.csv");
@@ -651,7 +651,7 @@ void main() {
 		cout<< (avgDeviation(pairs[i].second.originSpace) + avgDeviation(pairs[i].second.destSpace)) / 2 << ',';
 		cout << (avgDeviation(pairs[i].second.originTime) + avgDeviation(pairs[i].second.destTime)) / 2  << endl;
 	}
-	cout.close();
+	cout.close();*/
 	
 
 
