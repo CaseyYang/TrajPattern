@@ -45,6 +45,7 @@ struct Edge
 	int id;  //路段id
 	vector<double> poiNums;  //路段附近POI类型统计
 	int globalSemanticType=-1;  //路段所属种类
+	double poiLen;
 	Edge();
 };
 

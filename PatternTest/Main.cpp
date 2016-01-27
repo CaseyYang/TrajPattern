@@ -20,9 +20,11 @@ string trajectoryPath = "matchedEdge.txt";
 Map routeNetwork(rootDirectory+mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> resultsList;//结果
-double semanticThreshold=0.95;
+double semanticThreshold=0.95; double neighborRange = 200.0;
 int MinPts = 60,poiSize = 13;
 ofstream os;
+string poiFilePath = "NDBC扩展\\poi.csv";
+map<string, int> categories;
 struct OD {
 	set<int>originEdges;
 	set<int>destEdges;
@@ -50,6 +52,14 @@ double getDistance(Edge* edge1, Edge* edge2)
 	}
 //	cout << t1 << ' ' << t2 << ' ' << t3 << endl;
 	return 1 - t1 / sqrt(t2) / sqrt(t3);
+}
+double getPoiLength(Edge*edge1)
+{
+	double t2 = 0;
+	for (int i = 0; i < poiSize; i++)
+		t2 += edge1->poiNums[i] * edge1->poiNums[i];
+	edge1->poiLen = t2;
+	return t2;
 }
 double standardDeviation(vector<int>input)
 {
@@ -134,7 +144,51 @@ double standardDeviation(set<GeoPoint*>input)
 	return ans;
 }
 
+void generateSemanticRouteNetwork() {
+	ifstream fin(rootDirectory + poiFilePath);
+	double lat, lon;
+	string category;
+	char separator;
+	fin >> category;
+	int last = 0;
+	int categoryIndex = 0;
+	for (int i = 0; i < category.size(); ++i) {
+		if (category[i] == ',') {
+			categories.insert(make_pair(category.substr(last, i - last), categoryIndex++));
+			last = i + 1;
+		}
+	}
+	categories.insert(make_pair(category.substr(last, category.size() - last), categoryIndex++));
+	while (fin >> lat >> separator >> lon >> separator >> category) {
+		vector<Edge*> dest;
+		routeNetwork.getNearEdges(lat, lon, neighborRange, dest);
+		for each (Edge* edgePtr in dest)
+		{
+			if (edgePtr->poiNums.size() == 0) {
+				edgePtr->poiNums = vector<double>(categories.size());
+			}
+			++edgePtr->poiNums[categories[category]];
+		}
+	}
+	fin.close();
+}
 
+//对每个路段的poiNums数组进行归一化处理，每个POI种类数量除以该路段附近总的POI数量
+void poiNumsNormalize() {
+	for each (Edge* edge in routeNetwork.edges)
+	{
+		if (edge == NULL) continue;
+		int count = 0;
+		for each(double num in edge->poiNums) {
+			count += static_cast<int>(num);
+		}
+		if (count == 0) continue;
+		for (int i = 0; i < edge->poiNums.size(); ++i) {
+			edge->poiNums[i] = edge->poiNums[i] / count;
+		}
+		getPoiLength(edge);
+	}
+}
 //对比实验准备工作：读取轨迹文件、建立索引及聚类
 vector<TimeSlice*> clusterDemo() {
 	vector<TimeSlice*> timeSlices = vector<TimeSlice*>(1440);//初始化时间片集合
@@ -686,7 +740,7 @@ void readEdgeTime(string rootPath)
 void readEdge(string rootPath)
 {
 	ofstream cout("Edge.csv");
-	string completeInputFilesPath = rootPath + "edges*.txt";
+	string completeInputFilesPath = rootPath + "edges*";
 	const char* dir = completeInputFilesPath.c_str();
 	_finddata_t fileInfo;//文件信息
 	intptr_t lf;//文件句柄
@@ -709,8 +763,10 @@ void readEdge(string rootPath)
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
-	readEdge("D:\\Users\\苏昊\\Documents\\result_10_10_7_7\\result_10_10_7_7\\");
-//	readEdgeTime("D:\\Users\\苏昊\\Documents\\CGP\\tmp\\");
+	generateSemanticRouteNetwork();
+	poiNumsNormalize();
+	readEdge("D:\\Users\\苏昊\\Documents\\result_10_10_5_5\\result_10_10_5_5\\");
+//	readEdge("D:\\Users\\苏昊\\Documents\\CGP\\tmp\\");
 /*	readODTrajectory(trajectoryPath);
 	vector<PAIR>pairs(mp.begin(), mp.end());
 	sort(pairs.begin(), pairs.end(), cmp);
