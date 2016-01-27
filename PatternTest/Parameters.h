@@ -6,7 +6,7 @@
 #define DE_MINOBJECTS 5 //路段聚类最少包含的轨迹数
 
 //NDBC扩展所用到的参数
-#define TIMECLUSTING_KMEANS_K 5 //时段聚类数量
+#define TIMECLUSTING_KMEANS_K 12 //时段聚类数量
 #define TIMECLUSTERING_KMEANS_ITERTIME 15 //KMEANS迭代次数
 #define TIMECLUSTERING_KMEANS_TESTTIME 20 //KMEANS随机选择初始点的次数
 

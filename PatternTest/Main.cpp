@@ -326,6 +326,20 @@ int getSimilarity(int obj1, int obj2) {
 	return abs(obj1 - obj2);
 }
 
+//统计并输出动态分割时间段结果
+void outputTimeSlot(vector<PatternTimeSlot*>&timeSlots) {
+	ofstream fout("timeSlots.txt");
+	for (auto timeSlot : timeSlots) {
+		sort(timeSlot->timeStamps.begin(), timeSlot->timeStamps.end());
+		fout << timeSlot->timeStamps.front() / 60.0
+			<< " " << timeSlot->timeStamps.back() / 60.0
+			<< " " << timeSlot->center / 60.0
+			<< " " << timeSlot->timeStamps.size()
+			<< endl;
+	}
+	fout.close();
+}
+
 //对时间进行聚类的辅助函数：分裂现有时间聚类
 void splitTimeSlot(vector<PatternTimeSlot*>&timeSlots, int maxj)
 {
@@ -402,12 +416,8 @@ vector<PatternTimeSlot*> clusterFineGrainedPatterns()
 	}
 	//对时间段进行排序
 	sort(patternTimeSlots.begin(), patternTimeSlots.end(), timeSlotComparer);
-	//输出时间段分段结果至timeSlots.txt
-	//ofstream fout("timeSlots.txt");
-	//for (auto patternTimeSlot : patternTimeSlots) {
-	//	fout << patternTimeSlot->center << endl;
-	//}
-	//fout.close();
+	//仅用于有效性实验：输出时间段分割结果
+	//outputTimeSlot(patternTimeSlots);
 	//然后按语义进行聚类
 	for (int i = 1; i <= TIMECLUSTING_KMEANS_K; ++i) {
 		map<int, PatternCluster*> semanticTypePatternClusterMap = map<int, PatternCluster*>();
@@ -561,6 +571,8 @@ void outputCGPs() {
 	}
 }
 
+
+
 int main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork, rootDirectory + semanticRoadFilePath);
@@ -570,8 +582,8 @@ int main() {
 	edgeCluster();//读入地图匹配结果并构造路段聚类
 
 	//挖掘路段序列
-	clock_t start, finish;
-	start = clock();
+	clock_t vertStart, start, finish;
+	vertStart = start = clock();
 	//methodWithKPruning();
 	ndbcResults = methodWithKPruningAndMoreInfo();
 	finish = clock();
@@ -587,15 +599,15 @@ int main() {
 	getCoarseGrainedPatterns();
 	finish = clock();
 	cout << "粗粒度轨迹模式挖掘完成！用时：" << finish - start << "毫秒" << endl;
-
+	cout << "总共用时：" << finish - vertStart << "毫秒" << endl;
 	//NDBC扩展统计
 	cout << "过滤前，粗粒度轨迹模式数量：" << ndbcExtensionResults.size() << endl;
 	excludeCoarseGrainedPattern();
 	cout << "过滤后，粗粒度轨迹模式数量：" << ndbcExtensionResults.size() << endl;
-	CGPValidityCheck();
-	getPatternClusterTimeStamps();
-	outputCGPs();
-	outputCGPTimestamps();
+	//CGPValidityCheck();
+	//getPatternClusterTimeStamps();
+	//outputCGPs();
+	//outputCGPTimestamps();
 
 	cin >> start;
 
