@@ -21,7 +21,7 @@ Map routeNetwork(rootDirectory+mapDirectory, 500);
 vector<NewTimeSlice*> timeSlices;
 list<list<EdgeCluster*>> resultsList;//结果
 double semanticThreshold=0.95;
-int MinPts = 60;
+int MinPts = 60,poiSize = 13;
 ofstream os;
 struct OD {
 	set<int>originEdges;
@@ -34,6 +34,23 @@ struct OD {
 typedef pair<pair<int, int>, OD>PAIR;
 map<pair<int, int>, OD>mp;
 
+//求距离
+double getDistance(Edge* edge1, Edge* edge2)
+{
+	if (edge1->poiNums.size() < poiSize)
+		edge1->poiNums.resize(poiSize, 1);
+	if (edge2->poiNums.size() < poiSize)
+		edge2->poiNums.resize(poiSize, 1);
+	double t1 = 0, t2 = 0, t3 = 0;
+	for (int i = 0; i < poiSize; i++)
+	{
+		t1 += edge1->poiNums[i] * edge2->poiNums[i];
+		t2 += edge1->poiNums[i] * edge1->poiNums[i];
+		t3 += edge2->poiNums[i] * edge2->poiNums[i];
+	}
+//	cout << t1 << ' ' << t2 << ' ' << t3 << endl;
+	return 1 - t1 / sqrt(t2) / sqrt(t3);
+}
 double standardDeviation(vector<int>input)
 {
 	double avg=0,ans=0;
@@ -71,10 +88,22 @@ double avgDeviation(vector<int>input)
 }
 double avgDeviation(vector<GeoPoint*>input)
 {
+	if (input.size() <= 1)return 0;
 	double ans = 0;
 	for (int i = 0; i < input.size(); i++)
 		for (int j = i + 1; j < input.size(); j++)
 			ans += abs(GeoPoint::distM(input[j], input[i]));
+	ans = ans / input.size() / (input.size() - 1);
+	return ans;
+}
+double avgDeviation(vector<Edge*>input)
+{
+	if (input.size() <= 1)return 0;
+//	cout << input.size() << endl;
+	double ans = 0;
+	for (int i = 0; i < input.size(); i++)
+		for (int j = i + 1; j < input.size(); j++)
+			ans += getDistance(input[i],input[j]);
 	ans = ans / input.size() / (input.size() - 1);
 	return ans;
 }
@@ -525,6 +554,7 @@ GeoPoint* getLocation(Edge*edge)
 	GeoPoint* ans=new GeoPoint(((*(edge->figure->begin()))->lat + (*(edge->figure->rbegin()))->lat )/2, ((*(edge->figure->begin()))->lon +(*(edge->figure->rbegin()))->lon )/2);
 	return ans;
 }
+
 void readODTrajectory(string inPath)
 {
 	ifstream fin(inPath);
@@ -571,7 +601,6 @@ bool cmp(const PAIR&lhs, const PAIR&rhs)
 }
 double calcEdge(string fileName)
 {
-//	cout << fileName << endl;
 	int edge; double ans = 0;
 	vector<GeoPoint*>input; input.clear();
 	ifstream is;
@@ -589,6 +618,28 @@ double calcEdge(string fileName)
 	}
 //	cout << endl;
 	return ans/2;
+	is.close();
+}
+double calcSemantic(string fileName)
+{
+	int edge; double ans = 0;
+	vector<Edge*>input; input.clear();
+	ifstream is;
+	is.open(fileName);
+	while (is >> edge)
+	{
+		if (edge == -1)
+		{
+			ans += avgDeviation(input);
+			//	cout << input.size() << ' ';
+			input.clear();
+		}
+		else
+			input.push_back(routeNetwork.edges[edge]);
+	}
+	//	cout << endl;
+	return ans / 2;
+	is.close();
 }
 double calcTime(string fileName)
 {
@@ -632,11 +683,34 @@ void readEdgeTime(string rootPath)
 	}
 	cout.close();
 }
+void readEdge(string rootPath)
+{
+	ofstream cout("Edge.csv");
+	string completeInputFilesPath = rootPath + "edges*.txt";
+	const char* dir = completeInputFilesPath.c_str();
+	_finddata_t fileInfo;//文件信息
+	intptr_t lf;//文件句柄
+	if ((lf = _findfirst(dir, &fileInfo)) == -1l) {
+		return;
+	}
+	else {
+		int trajIndex = 0;
+		do {
+			string inputFileName = fileInfo.name;
+			cout << calcEdge(rootPath + inputFileName) << ',';
+			cout << calcSemantic(rootPath + inputFileName) << endl;
+		} while (_findnext(lf, &fileInfo) == 0);
+		_findclose(lf);
+		return;
+	}
+	cout.close();
+}
 
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork,rootDirectory + semanticRoadFilePath);
-	readEdgeTime("D:\\Users\\苏昊\\Documents\\CGP\\tmp\\");
+	readEdge("D:\\Users\\苏昊\\Documents\\result_10_10_7_7\\result_10_10_7_7\\");
+//	readEdgeTime("D:\\Users\\苏昊\\Documents\\CGP\\tmp\\");
 /*	readODTrajectory(trajectoryPath);
 	vector<PAIR>pairs(mp.begin(), mp.end());
 	sort(pairs.begin(), pairs.end(), cmp);
