@@ -511,9 +511,9 @@ void  openFileFolder(string rootPath)
 		return;
 	}
 	else {
-		int trajIndex = 0;
 		do {
 			string inputFileName = fileInfo.name;
+			cout << inputFileName << endl;
 			outputJson(rootPath+inputFileName);
 		} while (_findnext(lf, &fileInfo) == 0);
 		_findclose(lf);
@@ -524,7 +524,10 @@ void  openFileFolder(string rootPath)
 void main() {
 	//读入POI分布文件，填充poiNums数组
 	generateSemanticRoad(routeNetwork, rootDirectory + semanticRoadFilePath);
-	openFileFolder("E:\\suhao\\venues\\TrajPattern\\PatternTest\\generateJson\\");
+	//edge转json
+//	openFileFolder("E:\\suhao\\venues\\TrajPattern\\PatternTest\\generateJson\\");
+	openFileFolder("D:\\Users\\苏昊\\Documents\\KTS\\");
+
 	/*	out.open("cout.txt");
 		os.open("count.txt");
 		for (int i = 10; i <= 15; i += 1)
