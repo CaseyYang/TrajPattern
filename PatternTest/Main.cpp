@@ -604,10 +604,10 @@ int main() {
 	cout << "过滤前，粗粒度轨迹模式数量：" << ndbcExtensionResults.size() << endl;
 	excludeCoarseGrainedPattern();
 	cout << "过滤后，粗粒度轨迹模式数量：" << ndbcExtensionResults.size() << endl;
-	//CGPValidityCheck();
-	//getPatternClusterTimeStamps();
-	//outputCGPs();
-	//outputCGPTimestamps();
+	CGPValidityCheck();
+	getPatternClusterTimeStamps();
+	outputCGPs();
+	outputCGPTimestamps();
 
 	cin >> start;
 

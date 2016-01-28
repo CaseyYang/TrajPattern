@@ -10,11 +10,11 @@ string filePath = "I:\\YangKaixi\\MapMatchingProject\\MapMatchingProject\\Data\\
 
 
 //const int maxn = 1000; //!!!!!!!!!
-const double sigma = 5000; //300
+const double sigma = 300; //300
 const int Kc = 50; //7
 const int Mc = 50; //5
-const int Kp = 5; //3
-const int Mp = 5; //3
+const int Kp = 3; //3
+const int Mp = 3; //3
 const int TrajCount = 200000; //!!!!!!!
 
 Map routeNetork = Map(filePath + "新加坡路网\\", 500);//建立路网
