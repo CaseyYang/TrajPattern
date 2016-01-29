@@ -111,4 +111,7 @@
   <ItemGroup>
     <Text Include="项目说明.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+  </ItemGroup>
 </Project>
