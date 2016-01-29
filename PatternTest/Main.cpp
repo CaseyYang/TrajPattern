@@ -40,9 +40,9 @@ map<pair<int, int>, OD>mp;
 double getDistance(Edge* edge1, Edge* edge2)
 {
 	if (edge1->poiNums.size() < poiSize)
-		edge1->poiNums.resize(poiSize, 1);
+		return 0;
 	if (edge2->poiNums.size() < poiSize)
-		edge2->poiNums.resize(poiSize, 1);
+		return 0;
 	double t1 = 0, t2 = 0, t3 = 0;
 	for (int i = 0; i < poiSize; i++)
 	{
@@ -53,6 +53,8 @@ double getDistance(Edge* edge1, Edge* edge2)
 //	cout << t1 << ' ' << t2 << ' ' << t3 << endl;
 	return 1 - t1 / sqrt(t2) / sqrt(t3);
 }
+
+
 double getPoiLength(Edge*edge1)
 {
 	double t2 = 0;
@@ -674,6 +676,24 @@ double calcEdge(string fileName)
 	return ans/2;
 	is.close();
 }
+double getHHI(vector<Edge*>input)
+{
+	map<int, int>types;
+	for (Edge*edge : input)
+		if (types.find(edge->globalSemanticType) == types.end())
+			types[edge->globalSemanticType] = 0;
+		else
+		types[edge->globalSemanticType] += 1;
+	double ans = 0;
+	for (map<int, int>::iterator it = types.begin(); it != types.end(); it++)
+	{
+		cout << input.size() << endl;
+		ans += pow(double(it->second )/ input.size(), 2);
+	//	cout << ans << endl;
+	}
+	
+	return ans;
+}
 double calcSemantic(string fileName)
 {
 	int edge; double ans = 0;
@@ -684,7 +704,7 @@ double calcSemantic(string fileName)
 	{
 		if (edge == -1)
 		{
-			ans += avgDeviation(input);
+			ans += getHHI(input);
 			//	cout << input.size() << ' ';
 			input.clear();
 		}
