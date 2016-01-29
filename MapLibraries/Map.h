@@ -46,6 +46,7 @@ struct Edge
 	vector<double> poiNums;  //路段附近POI类型统计
 	double poiLen;//计算poiNums向量长度
 	int globalSemanticType=-1;  //路段所属种类
+	double poiLen;
 	Edge();
 };
 
