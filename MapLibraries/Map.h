@@ -34,14 +34,20 @@ struct NODE_DIJKSTRA {
 	}
 };
 
-struct  Edge
+struct Edge
 {
+	static map<string, int> poiCategories;//记录所有POI类型和在poiNums数组中的下标
 	Figure* figure;  //路形信息
 	double lengthM;  //记录路段总长，单位为m
 	int startNodeId; //路段起始点id
 	int endNodeId;  //路段终止点id
 	bool visited;  //辅助字段，外部调用勿改动
-	int id;
+	int id;  //路段id
+	vector<double> poiNums;  //路段附近POI类型统计
+	double poiLen;//计算poiNums向量长度
+	int globalSemanticType = -1;  //路段所属种类
+	double poiLen;
+	Edge();
 };
 
 struct AdjNode //邻接表结点
@@ -49,6 +55,12 @@ struct AdjNode //邻接表结点
 	int endPointId;
 	int edgeId;
 	AdjNode* next;
+};
+
+struct SemanticCluster
+{
+	vector<Edge*>cluster;
+	double SSE;
 };
 
 class Map
