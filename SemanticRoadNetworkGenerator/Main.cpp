@@ -9,7 +9,7 @@ string rootDirectory = "D:\\Document\\MDM Lab\\Data\\";
 string mapDirectory = "新加坡路网\\";
 string poiFilePath = "NDBC扩展\\poi.csv";
 string semanticRoadFilePath = "semanticRoad.txt";
-double neighborRange = 200.0;
+double neighborRange = 200.0;//考察路段附近neighborRange米范围内的兴趣点
 int KMEANS_K = 15;
 Map routeNetwork(rootDirectory + mapDirectory, 500);
 map<string, int> categories;
@@ -164,9 +164,9 @@ void splitCluster(vector<SemanticCluster>&clusters, int maxj)
 					a[i].cluster.push_back(clusters[maxj].cluster[k]);
 				else b[i].cluster.push_back(clusters[maxj].cluster[k]);
 				center1 = calcCenter(a[i].cluster); center2 = calcCenter(b[i].cluster);
-//			out << a[i].cluster.size() << ' ' << b[i].cluster.size() << ' ' << calcSSE(a[i], center1) << ' ' << calcSSE(b[i], center2) << endl;
+				//			out << a[i].cluster.size() << ' ' << b[i].cluster.size() << ' ' << calcSSE(a[i], center1) << ' ' << calcSSE(b[i], center2) << endl;
 		}
-//		out << endl;
+		//		out << endl;
 		SSE = calcSSE(a[i], center1) + calcSSE(b[i], center2);
 		if (SSE < minSSE) { minSSE = SSE; mj = i; }
 	}
@@ -202,14 +202,14 @@ void getGlobalSemanticType(vector<Edge*> &edges, int k)
 		for (auto edge : clusters[i - 1].cluster)
 			edge->globalSemanticType = i;
 	os << "count=" << k << endl;
-//	out << "count=" << k << endl;
+	//	out << "count=" << k << endl;
 	for (int i = -1; i <= k; i++)
 	{
 		int tot = 0;
 		for each (Edge* edge in routeNetwork.edges)
 			if (edge && edge->globalSemanticType == i)
 				tot++;
-		os << i << ' ' << tot <<endl;
+		os << i << ' ' << tot << endl;
 	}
 
 
@@ -218,7 +218,7 @@ void getGlobalSemanticType(vector<Edge*> &edges, int k)
 void main() {
 	generateSemanticRouteNetwork();
 	poiNumsNormalize();
-//	out.open("cout.txt");
+	//	out.open("cout.txt");
 	os.open("count.txt");
 	/*for (int i = 17; i <= 20; i += 1)
 	{

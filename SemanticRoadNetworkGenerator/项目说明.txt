@@ -1,0 +1,24 @@
+本项目生成路段的语义特征向量和弱语义类型。
+
+路段的语义特征向量由Edge类实例中vector<double>类型成员变量poiNums保存；
+每个元素为小于1大于0的double型小数，表示路段附近该类型兴趣点占路段附近总兴趣点数量比重；元素之和为1；
+路段的弱语义类型由Edge类实例中int型成员变量globalSemanticType保存；共有KMEANS_K种弱语义类型，标记为1~13；-1表示无弱语义类型；
+
+Map类型的全局变量RouteNetwork表示路网；
+
+语义特征向量读入过程：
+
+generateSemanticRouteNetwork();
+读入兴趣点类型数据，保存在map<string, int>类型全局变量categories中：键为兴趣点类型名称字符串，值为该兴趣点类型对应的语义特征向量下标；
+读入兴趣点位置数据，寻找兴趣点附近neighborRange范围内的路段，增加对应兴趣点类型的计数
+
+poiNumsNormalize();
+对每个路段的语义特征向量进行归一化处理，把每个兴趣点类型的计数变为在占路段附近总兴趣点数的比重；
+
+getGlobalSemanticType();
+对所有路段的语义特征向量进行二份K-MEANS聚类，核心函数是splitCluster，得到KMEANS_K个聚类，对应KMEANS_K种弱语义类型
+
+outputSemanticRouteNetwork();
+输出语义特征向量和弱语义类型到“semanticRoad.txt”;
+第一行为兴趣点类型，用逗号分隔；
+后面按路段索引升序，每个路段一行，格式为：路段索引,语义特征向量（逗号分隔）,路段弱语义类型
