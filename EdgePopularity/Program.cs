@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+/// <summary>
+/// changed by suhao
+/// </summary>
 namespace EdgePopularity
 {
     class Program
