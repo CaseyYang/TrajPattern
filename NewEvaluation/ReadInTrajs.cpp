@@ -57,32 +57,6 @@ void readOneMapMatchingResult(string &filePath, int trajId, vector<NewTimeSlice*
 	fin.close();
 }
 
-//读入给定路径的地图匹配结果，把每个匹配路段插入对应的时间片中（对应读结果合并文件版本）
-int readOneMapMatchingResultV2(ifstream &fin, int trajId, vector<NewTimeSlice*> &timeSlices, Map &routeNetwork) {
-	int time, lastUniformTime = -1;//uniformTime作用同readOneTrajectory函数中lastUniformTime
-	int edgeIndex;
-	double confidence;
-	char useless;
-	EdgeCluster* lastEdgeCluster = NULL;//记录上一个路段聚类，因为要用当前的匹配路段来更新上一路段聚类的nextEdgeCounts集合
-	while (fin >> time) {
-		if (time == -1) {
-			return -1;
-		}
-		fin >> useless >> edgeIndex >> useless >> confidence;
-		int uniformTime = time / 60;//把原始时间戳转为时间片时间
-		if (edgeIndex != -1 && uniformTime > lastUniformTime) {
-			Edge* matchedEdge = routeNetwork.edges.at(edgeIndex);
-			timeSlices.at(uniformTime)->add(trajId, matchedEdge);
-			if (lastEdgeCluster != NULL&&uniformTime == lastUniformTime + 1) {//上一个路段聚类不为空
-				lastEdgeCluster->refreshNextEdgeCounts(matchedEdge);//更新上一路段聚类的nextEdgeCounts集合
-			}
-			lastEdgeCluster = timeSlices.at(uniformTime)->clusters.at(matchedEdge);//更新lastEdgeCluster指向当前路段聚类
-			lastUniformTime = uniformTime;
-		}
-	}
-	return 0;
-}
-
 //读入文件夹中所有轨迹文件，保存轨迹和时间片
 void scanTrajFolder(string folderDir, string inputDirectory, vector<TimeSlice*> &timeSlices)
 {
@@ -134,21 +108,6 @@ void scanMapMatchingResultFolder(string folderDir, string inputDirectory, vector
 		return;
 	}
 }
-
-//读入合并的地图匹配文件，保存时间片
-void readMergedMapMatchingResult(string filePath, vector<NewTimeSlice*> &timeSlices, Map &routeNetwork) {
-	ifstream fin(filePath);
-	int returnVal = -1;
-	int trajIndex = 0;
-	while (returnVal == -1) {
-		returnVal = readOneMapMatchingResultV2(fin, trajIndex, timeSlices, routeNetwork);
-		++trajIndex;
-	}
-	fin.close();
-	return;
-}
-
-//读入路段附近POI统计文件，填充每个路段的poiNums数组
 void generateSemanticRoad(Map&routeNetwork, string filePath) {
 	ifstream fin(filePath);
 	string rawStr;
@@ -194,23 +153,17 @@ void generateSemanticRoad(Map&routeNetwork, string filePath) {
 			(*edgeIter)->globalSemanticType = curNum;
 		}
 		++edgeIter;
-		if (edgeIter == routeNetwork.edges.end()) break;
-		while (*edgeIter == NULL) {
-			++edgeIter;
-			if (edgeIter == routeNetwork.edges.end()) break;
-		}
+		while (*edgeIter == NULL) ++edgeIter;
 	}
 	fin.close();
 }
 
-//输出路段的poiNums数组至指定文件
-//文件格式为：
-//第一行：		POI种类名称（逗号分隔）
-//第二行及以后：	路段Id,第一种POI的归一化数量,第二种POI的归一化数量,……最后一种POI的归一化数量,路段所属语义聚类Id（即globalSemanticType）
-void outputSemanticRouteNetworkToPlainText(Map&routeNetwork, string filePath) {
+
+//输出路段id和poiNum数组到指定文件
+void outputSemanticRouteNetwork(Map&routeNetwork,string filePath) {
 	ofstream fout(filePath);
 	bool first = true;
-	for each (pair<string, int> category in Edge::poiCategories)
+	for each (pair<string,int> category in Edge::poiCategories)
 	{
 		if (first) {
 			first = false;
@@ -223,11 +176,12 @@ void outputSemanticRouteNetworkToPlainText(Map&routeNetwork, string filePath) {
 	fout << endl;
 	for each(Edge* edgePtr in routeNetwork.edges) {
 		if (edgePtr == NULL) continue;
+	//	if (edgePtr->poiNums.size() > 0)continue;
 		fout << edgePtr->id;
 		for each(double num in edgePtr->poiNums) {
 			fout << "," << num;
 		}
-		fout << "," << edgePtr->globalSemanticType << endl;
+		fout << endl;
 	}
 	fout.close();
 }

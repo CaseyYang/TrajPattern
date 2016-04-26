@@ -22,6 +22,7 @@
     <ProjectGuid>{9B349C46-A77E-4DD5-842D-A32B4E97B7AE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PatternTest</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -77,6 +78,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -130,38 +132,56 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\MapLibraries\GeoPoint.h" />
+    <ClInclude Include="..\MapLibraries\json\json.h" />
+    <ClInclude Include="..\MapLibraries\Map.h" />
     <ClInclude Include="Cluster.h" />
+    <ClInclude Include="CoarseGrainedPattern.h" />
     <ClInclude Include="Evaluation.h" />
+    <ClInclude Include="FineGrainedPattern.h" />
+    <ClInclude Include="Main.h" />
     <ClInclude Include="Parameters.h" />
     <ClInclude Include="EdgeCluster.h" />
-    <ClInclude Include="GeoPoint.h" />
-    <ClInclude Include="Map.h" />
     <ClInclude Include="NewTimeSlice.h" />
+    <ClInclude Include="PatternCluster.h" />
+    <ClInclude Include="PatternTimeSlot.h" />
     <ClInclude Include="ReadInTrajs.h" />
+    <ClInclude Include="Semantics.h" />
     <ClInclude Include="TimeSlice.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\MapLibraries\GeoPoint.cpp" />
+    <ClCompile Include="..\MapLibraries\json\jsoncpp.cpp" />
+    <ClCompile Include="..\MapLibraries\Map.cpp" />
     <ClCompile Include="Cluster.cpp" />
+    <ClCompile Include="CoarseGrainedPattern.cpp" />
     <ClCompile Include="EdgeCluster.cpp" />
     <ClCompile Include="Evaluation.cpp" />
-    <ClCompile Include="GeoPoint.cpp" />
-    <ClCompile Include="Map.cpp" />
+    <ClCompile Include="FineGrainedPattern.cpp" />
     <ClCompile Include="NewTimeSlice.cpp" />
+    <ClCompile Include="PatternCluster.cpp" />
+    <ClCompile Include="PatternTimeSlot.cpp" />
     <ClCompile Include="ReadInTrajs.cpp" />
     <ClCompile Include="TimeSlice.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="项目说明.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

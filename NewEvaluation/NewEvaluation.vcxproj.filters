@@ -18,6 +18,21 @@
     <ClCompile Include="Main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ReadInTrajs.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NewTimeSlice.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeSlice.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Cluster.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EdgeCluster.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="..\MapLibraries\GeoPoint.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -26,6 +41,21 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ReadInTrajs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Cluster.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NewTimeSlice.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeSlice.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="EdgeCluster.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="..\MapLibraries\GeoPoint.h">
       <Filter>头文件</Filter>
     </ClInclude>

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PatternTest", "PatternTest\PatternTest.vcxproj", "{9B349C46-A77E-4DD5-842D-A32B4E97B7AE}"
 EndProject
@@ -16,6 +16,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcludeGivenArea", "ExcludeGivenArea\ExcludeGivenArea.csproj", "{17836693-E2CC-4400-8730-2AEBDC456B5B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SemanticRoadNetworkGenerator", "SemanticRoadNetworkGenerator\SemanticRoadNetworkGenerator.vcxproj", "{9350FEC8-3A18-46FF-B40D-E985843D7233}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NewEvaluation", "NewEvaluation\NewEvaluation.vcxproj", "{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gathering", "gathering\gathering\gathering.vcxproj", "{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -117,6 +121,34 @@ Global
 		{9350FEC8-3A18-46FF-B40D-E985843D7233}.Release|Win32.Build.0 = Release|Win32
 		{9350FEC8-3A18-46FF-B40D-E985843D7233}.Release|x64.ActiveCfg = Release|x64
 		{9350FEC8-3A18-46FF-B40D-E985843D7233}.Release|x64.Build.0 = Release|x64
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Debug|Win32.Build.0 = Debug|Win32
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Debug|x64.ActiveCfg = Debug|x64
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Debug|x64.Build.0 = Debug|x64
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Release|Any CPU.ActiveCfg = Release|Win32
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Release|Win32.ActiveCfg = Release|Win32
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Release|Win32.Build.0 = Release|Win32
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Release|x64.ActiveCfg = Release|x64
+		{6DD8822F-F240-412F-B5D6-1D0B4D6D554B}.Release|x64.Build.0 = Release|x64
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Debug|Win32.Build.0 = Debug|Win32
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Debug|x64.ActiveCfg = Debug|x64
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Debug|x64.Build.0 = Debug|x64
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Release|Any CPU.ActiveCfg = Release|Win32
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Release|Win32.ActiveCfg = Release|Win32
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Release|Win32.Build.0 = Release|Win32
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Release|x64.ActiveCfg = Release|x64
+		{A5E20031-CFA0-4CF5-B1FB-B89FF051F879}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

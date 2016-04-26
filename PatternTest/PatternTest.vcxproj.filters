@@ -15,13 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Map.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ReadInTrajs.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="GeoPoint.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Cluster.h">
@@ -42,15 +36,36 @@
     <ClInclude Include="Evaluation.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\MapLibraries\GeoPoint.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MapLibraries\Map.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Semantics.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MapLibraries\json\json.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FineGrainedPattern.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PatternTimeSlot.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PatternCluster.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CoarseGrainedPattern.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Main.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ReadInTrajs.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="GeoPoint.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Map.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Cluster.cpp">
@@ -71,8 +86,32 @@
     <ClCompile Include="Main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\MapLibraries\GeoPoint.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MapLibraries\Map.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MapLibraries\json\jsoncpp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FineGrainedPattern.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PatternTimeSlot.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PatternCluster.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CoarseGrainedPattern.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="项目说明.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

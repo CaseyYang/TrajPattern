@@ -15,21 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GeoPoint.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Map.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MapLibraries\GeoPoint.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MapLibraries\Map.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Map.h">
+    <ClInclude Include="..\MapLibraries\GeoPoint.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="GeoPoint.h">
+    <ClInclude Include="..\MapLibraries\Map.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
